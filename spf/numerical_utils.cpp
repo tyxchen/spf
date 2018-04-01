@@ -1,0 +1,108 @@
+/*
+ * numerical_utils.cpp
+ *
+ *  Created on: 7 Mar 2018
+ *      Author: seonghwanjun
+ */
+
+#include <math.h>
+
+#include "numerical_utils.hpp"
+
+void normalize_destructively(vector<double> &log_weights)
+{
+    // compute the lognorm
+    double log_norm = log_add(log_weights);
+    for (unsigned int i = 0; i < log_weights.size(); i++)
+    {
+        log_weights[i] = exp(log_weights[i] - log_norm);
+    }
+}
+
+void normalize_destructively(double *log_weights, int size)
+{
+	// compute the lognorm
+	double log_norm = log_add(log_weights, size);
+	for (int i = 0; i < size; i++)
+	{
+		log_weights[i] = exp(log_weights[i] - log_norm);
+	}
+}
+
+double log_add(double x, double y)
+{
+	// make a the max
+	if (y > x) {
+		double temp = x;
+		x = y;
+		y = temp;
+	}
+	// now a is bigger
+	if (x == DOUBLE_NEG_INF) {
+		return x;
+	}
+	double negDiff = y - x;
+	if (negDiff < -20) {
+		return x;
+	}
+	return x + log(1.0 + exp(negDiff));
+}
+
+double log_add(vector<double> x)
+{
+    double max = DOUBLE_NEG_INF;
+    double maxIndex = 0;
+    for (unsigned int i = 0; i < x.size(); i++)
+    {
+        if (x[i] > max) {
+            max = x[i];
+            maxIndex = i;
+        }
+    }
+    if (max == DOUBLE_NEG_INF) return DOUBLE_NEG_INF;
+    // compute the negative difference
+    double threshold = max - 20;
+    double sumNegativeDifferences = 0.0;
+    for (unsigned int i = 0; i < x.size(); i++) {
+        if (i != maxIndex && x[i] > threshold) {
+            sumNegativeDifferences += exp(x[i] - max);
+        }
+    }
+    if (sumNegativeDifferences > 0.0) {
+        return max + log(1.0 + sumNegativeDifferences);
+    } else {
+        return max;
+    }
+    
+}
+
+double log_add(double *x, int size)
+{
+	double max = DOUBLE_NEG_INF;
+	double maxIndex = 0;
+	for (int i = 0; i < size; i++)
+	{
+		if (x[i] > max) {
+			max = x[i];
+			maxIndex = i;
+		}
+	}
+	if (max == DOUBLE_NEG_INF) return DOUBLE_NEG_INF;
+	  // compute the negative difference
+	  double threshold = max - 20;
+	  double sumNegativeDifferences = 0.0;
+	  for (int i = 0; i < size; i++) {
+	    if (i != maxIndex && x[i] > threshold) {
+	      sumNegativeDifferences += exp(x[i] - max);
+	    }
+	  }
+	  if (sumNegativeDifferences > 0.0) {
+	    return max + log(1.0 + sumNegativeDifferences);
+	  } else {
+	    return max;
+	  }
+
+}
+
+
+
