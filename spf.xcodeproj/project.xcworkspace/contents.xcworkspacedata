@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:spf.xcodeproj">
+      location = "group:/Users/seonghwanjun/Google Drive/Research/smc-research/repos/spf/spf/test.hpp">
+   </FileRef>
+   <FileRef
+      location = "self:">
    </FileRef>
 </Workspace>

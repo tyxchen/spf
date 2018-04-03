@@ -9,7 +9,18 @@
 
 #include "numerical_utils.hpp"
 
-void normalize_destructively(vector<double> &log_weights)
+double normalize(vector<double> &log_weights, vector<double> &weights)
+{
+    // compute the lognorm
+    double log_norm = log_add(log_weights);
+    for (unsigned int i = 0; i < log_weights.size(); i++)
+    {
+        weights[i] = exp(log_weights[i] - log_norm);
+    }
+    return log_norm;
+}
+
+double normalize_destructively(vector<double> &log_weights)
 {
     // compute the lognorm
     double log_norm = log_add(log_weights);
@@ -17,9 +28,10 @@ void normalize_destructively(vector<double> &log_weights)
     {
         log_weights[i] = exp(log_weights[i] - log_norm);
     }
+    return log_norm;
 }
 
-void normalize_destructively(double *log_weights, int size)
+double normalize_destructively(double *log_weights, int size)
 {
 	// compute the lognorm
 	double log_norm = log_add(log_weights, size);
@@ -27,6 +39,7 @@ void normalize_destructively(double *log_weights, int size)
 	{
 		log_weights[i] = exp(log_weights[i] - log_norm);
 	}
+    return log_norm;
 }
 
 double log_add(double x, double y)

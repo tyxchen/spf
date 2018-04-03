@@ -5,6 +5,7 @@
  *      Author: seonghwanjun
  */
 
+#include <math.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
@@ -13,7 +14,7 @@
 #include "sampling_utils.hpp"
 #include "smc_model.hpp"
 
-DiscreteHMM::DiscreteHMM(unsigned int num_states, vector<double> mu, vector<vector<double> > transition_probs, vector<vector<double> > emission_probs, vector<int> obs)
+DiscreteHMM::DiscreteHMM(unsigned long num_states, vector<double> mu, vector<vector<double> > transition_probs, vector<vector<double> > emission_probs, vector<int> obs)
 {
     this->obs = obs;
 	this->num_states = num_states;
@@ -33,14 +34,14 @@ std::pair<int, double> DiscreteHMM::propose_initial(gsl_rng *random)
 {
 	// sample from multinomial distribution parameterized by mu
 	int state = multinomial(random, initial_distn);
-    return make_pair(state, emission_probs[state][obs[0]]);
+    return make_pair(state, log(emission_probs[state][obs[0]]));
 }
 
 std::pair<int, double> DiscreteHMM::propose_next(gsl_rng *random, int t, int curr)
 {
 	// sample from multinomial distribution parameterized by mu
 	int state = multinomial(random, transition_probs[curr]);
-    double logw = emission_probs[state][obs[t]];
+    double logw = log(emission_probs[state][obs[t]]);
 	return make_pair(state, logw);
 }
 

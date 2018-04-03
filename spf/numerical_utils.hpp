@@ -18,8 +18,10 @@ using namespace std;
 const double DOUBLE_INF = std::numeric_limits<double>::infinity();
 const double DOUBLE_NEG_INF = -std::numeric_limits<double>::infinity();
 
-void normalize_destructively(vector<double> &log_weights);
-void normalize_destructively(double *log_weights, int size);
+// returns log sum as by-product
+double normalize(vector<double> &log_weights, vector<double> &weights);
+double normalize_destructively(vector<double> &log_weights);
+double normalize_destructively(double *log_weights, int size);
 double log_add(double x, double y);
 double log_add(double *x, int size);
 double log_add(vector<double> x);

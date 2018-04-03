@@ -41,6 +41,14 @@ int multinomial(const gsl_rng *random, vector<double> normalized_probs)
     return -1;
 }
 
+void uniform(const gsl_rng *random, unsigned int N, double *ret)
+{
+    for (int n = 0; n < N; n++)
+    {
+        ret[n] = gsl_rng_uniform(random);
+    }
+}
+
 void multinomial(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *indices)
 {
     double probs[normalized_probs.size()];
@@ -48,3 +56,22 @@ void multinomial(const gsl_rng *random, unsigned int N, vector<double> normalize
     gsl_ran_multinomial(random, N, N, probs, indices);
 }
 
+void sample_indices(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *indices)
+{
+    // draw N uniform values
+    double *uvec = new double[N];
+    uniform(random, N, uvec); // N
+    sort(uvec, uvec + N); // N log N
+    double sum = 0.0;
+    int idx = 0;
+    for (int n = 0; n < N; n++)
+    {
+        while (uvec[n] > sum + normalized_probs[idx]) {
+            sum += normalized_probs[idx];
+            idx++;
+        }
+        indices[n] = idx;
+    }
+
+    delete [] uvec;
+}

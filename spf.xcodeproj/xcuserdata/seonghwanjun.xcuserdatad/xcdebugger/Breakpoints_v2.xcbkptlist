@@ -9,14 +9,62 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "spf/smc.hpp"
-            timestampString = "544310950.649124"
+            filePath = "spf/discrete_hmm_model.cpp"
+            timestampString = "544390783.2834409"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "55"
-            endingLineNumber = "55"
-            landmarkName = "run_smc(gsl_rng *random, unsigned int num_particles, bool final_resampling)"
-            landmarkType = "9">
+            startingLineNumber = "36"
+            endingLineNumber = "36"
+            landmarkName = "DiscreteHMM::propose_initial(gsl_rng *random)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "spf/discrete_hmm_model.cpp"
+            timestampString = "544390783.2835"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "43"
+            endingLineNumber = "43"
+            landmarkName = "DiscreteHMM::propose_next(gsl_rng *random, int t, int curr)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "spf/discrete_hmm_model.cpp"
+            timestampString = "544390783.283542"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "37"
+            endingLineNumber = "37"
+            landmarkName = "DiscreteHMM::propose_initial(gsl_rng *random)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "spf/discrete_hmm_model.cpp"
+            timestampString = "544390783.283581"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "38"
+            endingLineNumber = "38"
+            landmarkName = "DiscreteHMM::propose_initial(gsl_rng *random)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -26,12 +74,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "spf/smc.hpp"
-            timestampString = "544310950.649492"
+            timestampString = "544474138.4540991"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "68"
             endingLineNumber = "68"
-            landmarkName = "run_smc(gsl_rng *random, unsigned int num_particles, bool final_resampling)"
+            landmarkName = "run_smc(gsl_rng *random, unsigned int num_particles)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -42,12 +90,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "spf/smc.hpp"
-            timestampString = "544310950.649725"
+            timestampString = "544474138.4543869"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "73"
-            endingLineNumber = "73"
-            landmarkName = "run_smc(gsl_rng *random, unsigned int num_particles, bool final_resampling)"
+            startingLineNumber = "66"
+            endingLineNumber = "66"
+            landmarkName = "run_smc(gsl_rng *random, unsigned int num_particles)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -57,13 +105,29 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "spf/main.cpp"
-            timestampString = "544310950.649935"
+            filePath = "spf/smc.hpp"
+            timestampString = "544474138.454567"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "60"
-            endingLineNumber = "60"
-            landmarkName = "main()"
+            startingLineNumber = "64"
+            endingLineNumber = "64"
+            landmarkName = "run_smc(gsl_rng *random, unsigned int num_particles)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "spf/smc.hpp"
+            timestampString = "544474138.454736"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "69"
+            endingLineNumber = "69"
+            landmarkName = "run_smc(gsl_rng *random, unsigned int num_particles)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
