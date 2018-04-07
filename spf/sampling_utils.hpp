@@ -15,8 +15,8 @@
 using namespace std;
 
 int multinomial(const gsl_rng *random, vector<double> normalized_probs);
-void multinomial(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *indices);
-void sample_indices(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *indices);
+void multinomial(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *result); // ASSERT: the length of result is same as normalized_probs
+void sample_indices(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *indices); // ASSERT: the length of indices is N
 gsl_rng* get_random(long seed);
 
 

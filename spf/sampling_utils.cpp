@@ -49,11 +49,11 @@ void uniform(const gsl_rng *random, unsigned int N, double *ret)
     }
 }
 
-void multinomial(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *indices)
+void multinomial(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *result)
 {
     double probs[normalized_probs.size()];
     std::copy(normalized_probs.begin(), normalized_probs.end(), probs);
-    gsl_ran_multinomial(random, N, N, probs, indices);
+    gsl_ran_multinomial(random, N, N, probs, result);
 }
 
 void sample_indices(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *indices)

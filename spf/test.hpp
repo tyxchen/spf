@@ -88,13 +88,16 @@ void test_smc()
         cout << x_t << "->" << y_t << endl;
     }
 
-    int num_particles = 100000;
-    SMC<int> smc(new DiscreteHMM(num_latent_states, mu, P, Q, obs));
+    int num_particles = 10000;
+    SMCOptions *options = new SMCOptions();
+    options->essThreshold = 1;
+    SMC<int> smc(new DiscreteHMM(num_latent_states, mu, P, Q, obs), options);
     smc.run_smc(random, num_particles);
-    vector<int> particles = smc.get_particles();
-    vector<double> log_weights = smc.get_log_weights();
-    vector<double> normalized_weights = smc.get_normalized_weights();
-    
+    ParticlePopulation<int> *pop = smc.get_curr_population();
+    vector<int> *particles = pop->get_particles();
+    //vector<double> *log_weights = pop->get_log_weights();
+    vector<double> *normalized_weights = pop->get_normalized_weights();
+
     // get the estimate of the marginal likelihood: p(y_{1:T})
     double true_log_marginal_lik = -4.481802772037807;
     double log_marginal_lik = smc.get_log_marginal_likelihood();
@@ -105,7 +108,7 @@ void test_smc()
     double probs_T[num_latent_states];
     for (int n = 0; n < num_particles; n++)
     {
-            probs_T[particles[n]] += normalized_weights[n];
+            probs_T[(*particles)[n]] += (*normalized_weights)[n];
     }
     
     double truth_T[]{0.41014761778484926, 0.16648987890038008, 0.4233625033147706};

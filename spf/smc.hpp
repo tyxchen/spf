@@ -11,89 +11,116 @@
 #define SRC_SMC_HPP_
 
 #include <vector>
-
 #include <gsl/gsl_rng.h>
 
 #include "numerical_utils.hpp"
+#include "particle_population.hpp"
+#include "resampling.hpp"
 #include "smc_model.hpp"
+#include "smc_options.hpp"
 #include "sampling_utils.hpp"
 
 using namespace std;
 
 template <class P> class SMC
 {
-    double log_marginal_likelihood = 0;
-	vector<P> particles;
-	vector<double> log_weights;
-    vector<double> *normalized_weights = 0;
+    SMCOptions *options;
 	ProblemSpecification<P> *proposal; // pointer to proposal object to be passed into SMC constructor
+    double log_marginal_likelihood = 0;
+    ParticlePopulation<P> *curr_pop = 0;
+    ParticlePopulation<P> *propose(gsl_rng *random, ParticlePopulation<P> *pop, int iter, int num_proposals);
+    ParticlePopulation<P> *resample(const gsl_rng *random, SMCOptions::ResamplingScheme resampling_scheme, ParticlePopulation<P> *pop, int N);
 
 public:
-	SMC(ProblemSpecification<P> *proposal);
+	SMC(ProblemSpecification<P> *proposal, SMCOptions *options);
 	void run_smc(gsl_rng *random, unsigned int num_particles);
-    inline vector<P> get_particles() { return particles; }
-    inline vector<double> get_log_weights() { return log_weights; }
-    vector<double> get_normalized_weights();
     double get_log_marginal_likelihood();
+    inline ParticlePopulation<P>* get_curr_population() { return curr_pop; }
     ~SMC();
 };
 
 template <class P>
-SMC<P>::SMC(ProblemSpecification<P> *proposal)
+SMC<P>::SMC(ProblemSpecification<P> *proposal, SMCOptions *options)
 {
     this->proposal = proposal;
+    this->options = options;
 }
 
 template <class P>
 void SMC<P>::run_smc(gsl_rng *random, unsigned int num_particles)
 {
-    // declare local pointers to be used
-    unsigned int *indices = new unsigned int[num_particles];
-    vector<P> *temp_particles = new vector<P>(num_particles);
-    vector<double> *temp_log_weights = new vector<double>(num_particles);
-    normalized_weights = new vector<double>(num_particles);
-
     unsigned long R = proposal->num_iterations();
 
-    for (int n = 0; n < num_particles; n++)
-    {
-        pair<P, double> ret = proposal->propose_initial(random);
-        particles.push_back(ret.first);
-        log_weights.push_back(ret.second);
-    }
-    log_marginal_likelihood = normalize(log_weights, *normalized_weights) - log(num_particles);
+    // construct initial population
+    curr_pop = ParticlePopulation<P>::construct_equally_weighted_population(num_particles);
 
-    for (int r = 1; r < R; r++)
+    log_marginal_likelihood = 0.0;
+    double log_num_particles = log(num_particles);
+    for (int r = 0; r < R; r++)
     {
-        sample_indices(random, num_particles, *normalized_weights, indices);
-        
-        for (int n = 0; n < num_particles; n++)
-        {
-            // resample a particle
-            P curr = particles[indices[n]];
-            pair<P, double> ret = proposal->propose_next(random, r, curr);
-            (*temp_particles)[n] = ret.first;
-            //(*temp_log_weights)[n] = log_weights[indices[n]] + ret.second;
-            (*temp_log_weights)[n] = ret.second;
+        curr_pop = propose(random, curr_pop, r, num_particles);
+        log_marginal_likelihood += (curr_pop->get_log_norm() - log_num_particles);
+        if (curr_pop->get_ess() <= options->essThreshold) {
+            // resample
+            curr_pop = resample(random, options->resampling, curr_pop, num_particles);
         }
-        // assigns the vector pointed by temp_particles to particles, this copies the values due to operator overloading on =
-        particles = *temp_particles;
-        log_weights = *temp_log_weights;
-
-        // update the log_marginal_likelihood thus far -- log_weights will be normalized in preparation for the next iteration
-        log_marginal_likelihood += (normalize(log_weights, *normalized_weights) - log(num_particles));
     }
-        
-    // delete local pointers to be used
-    delete temp_particles;
-    delete temp_log_weights;
-    delete [] indices;
 }
 
-template <class P>
-vector<double> SMC<P>::get_normalized_weights()
+template<class P>
+ParticlePopulation<P>* SMC<P>::propose(gsl_rng *random, ParticlePopulation<P> *pop, int iter, int num_proposals)
 {
-    return *normalized_weights;
+    vector<P> *curr_particles = pop->get_particles();
+    //vector<double> *curr_log_weights = pop->get_log_weights();
+
+    vector<P> *new_particles = new vector<P>(num_proposals);
+    vector<double> *new_log_weights = new vector<double>(num_proposals);
+
+    std::pair<int, double> ret;
+    for (int n = 0; n < num_proposals; n++)
+    {
+        ret = proposal->propose_next(random, iter, (*curr_particles)[n]);
+        (*new_particles)[n] = ret.first;
+        (*new_log_weights)[n] = ret.second;
+        //(*new_log_weights)[n] = (*curr_log_weights)[n] + ret.second;
+    }
+    ParticlePopulation<P> *new_pop = new ParticlePopulation<P>(new_particles, new_log_weights);
+    return new_pop;
+}
+
+template <typename P>
+ParticlePopulation<P>* SMC<P>::resample(const gsl_rng *random, SMCOptions::ResamplingScheme resampling_scheme, ParticlePopulation<P> *pop, int N)
+{
+    unsigned int *indices = new unsigned int[N];
+    switch (resampling_scheme)
+    {
+        case SMCOptions::ResamplingScheme::MULTINOMIAL:
+            multinomial_resampling(random, pop->get_normalized_weights(), N, indices);
+            break;
+        case SMCOptions::ResamplingScheme::STRATIFIED:
+            stratified_resampling(random, pop->get_normalized_weights(), N, indices);
+            break;
+        case SMCOptions::ResamplingScheme::SYSTEMATIC:
+            systematic_resampling(random, pop->get_normalized_weights(), N, indices);
+            break;
+        case SMCOptions::ResamplingScheme::RESIDUAL:
+            residual_resampling(random, pop->get_normalized_weights(), N, indices);
+            break;
+    }
+    
+    vector<P> *curr_particles = pop->get_particles();
+    
+    vector<P> *particles = new vector<P>();
+    vector<double> *log_weights = new vector<double>();
+    double log_w = log(N);
+    for (int n = 0; n < N; n++)
+    {
+        particles->push_back((*curr_particles)[indices[n]]);
+        log_weights->push_back(log_w);
+    }
+    
+    ParticlePopulation<P> *new_pop = new ParticlePopulation<P>(particles, log_weights);
+    return new_pop;
 }
 
 template <class P>
@@ -105,6 +132,5 @@ double SMC<P>::get_log_marginal_likelihood()
 template <class P>
 SMC<P>::~SMC()
 {
-    delete normalized_weights;
 }
 #endif /* SRC_SMC_HPP_ */

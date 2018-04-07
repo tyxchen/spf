@@ -27,6 +27,9 @@
 
 /* Begin PBXFileReference section */
 		3D0DB00C20727AB50054B4BB /* test.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = test.hpp; path = "/Users/seonghwanjun/Google Drive/Research/smc-research/repos/spf/spf/test.hpp"; sourceTree = "<absolute>"; };
+		3DC9928120759FF800286755 /* smc_options.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = smc_options.hpp; sourceTree = "<group>"; };
+		3DC992822075AD4C00286755 /* particle_population.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = particle_population.hpp; sourceTree = "<group>"; };
+		3DD51B34207926A900966F46 /* resampling.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = resampling.hpp; sourceTree = "<group>"; };
 		3DDFEA342071668D0041358C /* spf */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = spf; sourceTree = BUILT_PRODUCTS_DIR; };
 		3DDFEA372071668D0041358C /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		3DDFEA3F207166A50041358C /* smc.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = smc.hpp; sourceTree = "<group>"; };
@@ -78,6 +81,9 @@
 				3DDFEA46207166A60041358C /* sampling_utils.hpp */,
 				3DDFEA43207166A50041358C /* smc_model.hpp */,
 				3DDFEA3F207166A50041358C /* smc.hpp */,
+				3DD51B34207926A900966F46 /* resampling.hpp */,
+				3DC992822075AD4C00286755 /* particle_population.hpp */,
+				3DC9928120759FF800286755 /* smc_options.hpp */,
 				3DDFEA372071668D0041358C /* main.cpp */,
 			);
 			path = spf;
