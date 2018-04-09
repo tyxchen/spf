@@ -27,15 +27,15 @@ template <class P> class SMC
     SMCOptions *options;
 	ProblemSpecification<P> *proposal; // pointer to proposal object to be passed into SMC constructor
     double log_marginal_likelihood = 0;
-    ParticlePopulation<P> *curr_pop = 0;
     ParticlePopulation<P> *propose(gsl_rng *random, ParticlePopulation<P> *pop, int iter, int num_proposals);
     ParticlePopulation<P> *resample(const gsl_rng *random, SMCOptions::ResamplingScheme resampling_scheme, ParticlePopulation<P> *pop, int N);
+    vector<ParticlePopulation<P> *> *populations = 0;
 
 public:
 	SMC(ProblemSpecification<P> *proposal, SMCOptions *options);
 	void run_smc(gsl_rng *random, unsigned int num_particles);
     double get_log_marginal_likelihood();
-    inline ParticlePopulation<P>* get_curr_population() { return curr_pop; }
+    inline ParticlePopulation<P>* get_curr_population() { return populations->back(); }
     ~SMC();
 };
 
@@ -44,6 +44,7 @@ SMC<P>::SMC(ProblemSpecification<P> *proposal, SMCOptions *options)
 {
     this->proposal = proposal;
     this->options = options;
+    this->populations = new vector<ParticlePopulation<P> *>();
 }
 
 template <class P>
@@ -51,19 +52,23 @@ void SMC<P>::run_smc(gsl_rng *random, unsigned int num_particles)
 {
     unsigned long R = proposal->num_iterations();
 
-    // construct initial population
-    //curr_pop = ParticlePopulation<P>::construct_equally_weighted_population(num_particles);
-    curr_pop = 0;
+    ParticlePopulation<P> *curr_pop = 0;
 
     log_marginal_likelihood = 0.0;
     double log_num_particles = log(num_particles);
     for (int r = 0; r < R; r++)
     {
         curr_pop = propose(random, curr_pop, r, num_particles);
+        populations->push_back(curr_pop);
+        if (!options->track_population && r > 0) {
+            delete (*populations)[r-1]; // delete the ParticlePopulation (particles, log_weights, and normalized_weights)
+        }
         log_marginal_likelihood += (curr_pop->get_log_norm() - log_num_particles);
         if (curr_pop->get_ess() <= options->essThreshold) {
             // resample
             curr_pop = resample(random, options->resampling, curr_pop, num_particles);
+            delete (*populations)[r]; // delete pre-resampling population
+            (*populations)[r] = curr_pop;
         }
     }
 }
@@ -128,6 +133,8 @@ ParticlePopulation<P>* SMC<P>::resample(const gsl_rng *random, SMCOptions::Resam
     }
     
     ParticlePopulation<P> *new_pop = new ParticlePopulation<P>(particles, log_weights);
+    
+    delete [] indices;
     return new_pop;
 }
 

@@ -36,6 +36,7 @@ public:
     double get_log_norm();
     static ParticlePopulation<P>* construct_equally_weighted_population(int num_particles);
     static ParticlePopulation<P>* construct_equally_weighted_population(vector<P> *particles);
+    ~ParticlePopulation();
 };
 
 template <class P>
@@ -126,4 +127,13 @@ ParticlePopulation<P>* ParticlePopulation<P>::construct_equally_weighted_populat
     ParticlePopulation<P> *pop = new ParticlePopulation<P>(particles, log_weights);
     return pop;
 }
+
+template <class P>
+ParticlePopulation<P>::~ParticlePopulation()
+{
+    delete particles;
+    delete log_weights;
+    delete normalized_weights;
+}
+
 #endif /* particle_population_h */

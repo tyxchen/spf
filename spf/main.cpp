@@ -22,7 +22,8 @@ using namespace std;
 
 int main()
 {
-    test_smc();
+    //test_smc();
+    test_resampling_schemes();
 	return 0;
 }
 

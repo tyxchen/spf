@@ -17,6 +17,12 @@
 #include "sampling_utils.hpp"
 #include "smc.hpp"
 #include "smc_model.hpp"
+#include "smc_options.hpp"
+
+void test_numerical_utils();
+double *compare_resampling_schemes(long seed, int num_particles, vector<SMCOptions::ResamplingScheme> resamplingSchemes);
+void test_smc();
+void test_resampling_schemes();
 
 void test_numerical_utils()
 {
@@ -88,7 +94,7 @@ void test_smc()
         cout << x_t << "->" << y_t << endl;
     }
 
-    int num_particles = 1000000;
+    int num_particles = 10000000;
     SMCOptions *options = new SMCOptions();
     options->essThreshold = 1;
     options->resampling = SMCOptions::ResamplingScheme::STRATIFIED;
@@ -125,5 +131,82 @@ void test_smc()
     cout << "total error: " << total_error << endl;
     
     // TODO: put this into a unit test framework
+}
+
+void test_resampling_schemes()
+{
+    vector<SMCOptions::ResamplingScheme> resampling_schemes;
+    resampling_schemes.push_back(SMCOptions::ResamplingScheme::MULTINOMIAL);
+    resampling_schemes.push_back(SMCOptions::ResamplingScheme::SYSTEMATIC);
+    resampling_schemes.push_back(SMCOptions::ResamplingScheme::STRATIFIED);
+    double vars[3];
+    int num_runs = 20;
+    for (int i = 0; i < num_runs; i++) {
+        int seed = rand();
+        double *ret = compare_resampling_schemes(seed, 10000, resampling_schemes);
+        vars[0] += ret[0];
+        vars[1] += ret[1];
+        vars[2] += ret[2];
+    }
+    cout << vars[0] << ", " << vars[1] << ", " << vars[2] << endl;
+}
+
+double *compare_resampling_schemes(long seed, int num_particles, vector<SMCOptions::ResamplingScheme> resamplingSchemes)
+{
+    int length = 3;
+    vector<double> mu({0.1, 0.4, 0.5});
+    vector<vector<double> > P({{0.2, 0.4, 0.4}, {0.1, 0.8, 0.1}, {0.9, 0.05, 0.05}});
+    vector<vector<double> > Q({{0.4, 0.1, 0.5}, {0.1, 0.1, 0.8}, {0.3, 0.2, 0.5}});
+    
+    unsigned long num_latent_states = mu.size();
+    //unsigned long num_obs_states = Q[0].size();
+    
+    vector<int> latent;
+    vector<int> obs;
+    
+    gsl_rng* random = get_random(seed);
+    
+    int x_t = 0, y_t = 0;
+    for (int t = 0; t < length; t++)
+    {
+        if (t == 0) {
+            x_t = multinomial(random, mu);
+        } else {
+            x_t = multinomial(random, P[latent[t-1]]);
+        }
+        y_t = multinomial(random, Q[x_t]);
+        latent.push_back(x_t);
+        obs.push_back(y_t);
+        cout << x_t << "->" << y_t << endl;
+    }
+    
+    SMCOptions *options = new SMCOptions();
+    options->essThreshold = 1;
+    double *vars = new double[resamplingSchemes.size()];
+    for (unsigned long i = 0; i < resamplingSchemes.size(); i++) {
+        options->resampling = resamplingSchemes[i];
+        SMC<int> smc(new DiscreteHMM(num_latent_states, mu, P, Q, obs), options);
+        smc.run_smc(random, num_particles);
+        ParticlePopulation<int> *pop = smc.get_curr_population();
+        vector<int> *particles = pop->get_particles();
+        //vector<double> *log_weights = pop->get_log_weights();
+        vector<double> *normalized_weights = pop->get_normalized_weights();
+        
+        double probs_T[num_latent_states];
+        double var_T[num_latent_states];
+        for (int n = 0; n < num_particles; n++)
+        {
+            probs_T[(*particles)[n]] += (*normalized_weights)[n];
+        }
+        for (int n = 0; n < num_particles; n++)
+        {
+            double diff = (*normalized_weights)[n] - probs_T[(*particles)[n]];
+            var_T[(*particles)[n]] += diff * diff;
+        }
+        vars[i] = var_T[0] / num_particles;
+        cout << options->resampling << ": " << vars[i] << endl;
+    }
+    
+    return vars;
 }
 

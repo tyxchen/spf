@@ -14,13 +14,14 @@ class SMCOptions
 public:
     unsigned int num_particles = 1000;
     enum ResamplingScheme {
-        MULTINOMIAL,
-        STRATIFIED,
-        SYSTEMATIC,
-        RESIDUAL
+        MULTINOMIAL = 0,
+        STRATIFIED = 1,
+        SYSTEMATIC = 2,
+        RESIDUAL = 3
     };
     ResamplingScheme resampling = MULTINOMIAL;
     double essThreshold = 0.5;
+    bool track_population = false;
     
     // at some point, look into implementing multi-threading
     // unsigned int num_threads = 4;
