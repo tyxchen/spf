@@ -52,7 +52,8 @@ void SMC<P>::run_smc(gsl_rng *random, unsigned int num_particles)
     unsigned long R = proposal->num_iterations();
 
     // construct initial population
-    curr_pop = ParticlePopulation<P>::construct_equally_weighted_population(num_particles);
+    //curr_pop = ParticlePopulation<P>::construct_equally_weighted_population(num_particles);
+    curr_pop = 0;
 
     log_marginal_likelihood = 0.0;
     double log_num_particles = log(num_particles);
@@ -70,8 +71,11 @@ void SMC<P>::run_smc(gsl_rng *random, unsigned int num_particles)
 template<class P>
 ParticlePopulation<P>* SMC<P>::propose(gsl_rng *random, ParticlePopulation<P> *pop, int iter, int num_proposals)
 {
-    vector<P> *curr_particles = pop->get_particles();
-    //vector<double> *curr_log_weights = pop->get_log_weights();
+    vector<P> *curr_particles = 0;
+    if (pop != 0) {
+         curr_particles = pop->get_particles();
+        //vector<double> *curr_log_weights = pop->get_log_weights();
+    }
 
     vector<P> *new_particles = new vector<P>(num_proposals);
     vector<double> *new_log_weights = new vector<double>(num_proposals);
@@ -79,7 +83,11 @@ ParticlePopulation<P>* SMC<P>::propose(gsl_rng *random, ParticlePopulation<P> *p
     std::pair<int, double> ret;
     for (int n = 0; n < num_proposals; n++)
     {
-        ret = proposal->propose_next(random, iter, (*curr_particles)[n]);
+        if (pop == 0) {
+            ret = proposal->propose_initial(random);
+        } else {
+            ret = proposal->propose_next(random, iter, (*curr_particles)[n]);
+        }
         (*new_particles)[n] = ret.first;
         (*new_log_weights)[n] = ret.second;
         //(*new_log_weights)[n] = (*curr_log_weights)[n] + ret.second;

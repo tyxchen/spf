@@ -88,7 +88,7 @@ void test_smc()
         cout << x_t << "->" << y_t << endl;
     }
 
-    int num_particles = 10000;
+    int num_particles = 1000000;
     SMCOptions *options = new SMCOptions();
     options->essThreshold = 1;
     SMC<int> smc(new DiscreteHMM(num_latent_states, mu, P, Q, obs), options);
@@ -122,5 +122,7 @@ void test_smc()
         cout << "Diff: " << err << endl;
     }
     cout << "total error: " << total_error << endl;
+    
+    // TODO: put this into a unit test framework
 }
 
