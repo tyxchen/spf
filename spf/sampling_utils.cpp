@@ -56,7 +56,7 @@ void multinomial(const gsl_rng *random, unsigned int N, vector<double> normalize
     gsl_ran_multinomial(random, N, N, probs, result);
 }
 
-void sample_indices(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *indices)
+void multinomial_sample_indices(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *indices)
 {
     // draw N uniform values
     double *uvec = new double[N];

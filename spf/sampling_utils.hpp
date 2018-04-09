@@ -14,10 +14,16 @@
 
 using namespace std;
 
-int multinomial(const gsl_rng *random, vector<double> normalized_probs);
-void multinomial(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *result); // ASSERT: the length of result is same as normalized_probs
-void sample_indices(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *indices); // ASSERT: the length of indices is N
 gsl_rng* get_random(long seed);
 
+// draw one sample and return the index of that sample {1, ..., normalized_probs.size()}
+int multinomial(const gsl_rng *random, vector<double> normalized_probs);
+
+// ASSERT: the length of result is same as normalized_probs
+void multinomial(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *result);
+
+// ASSERT: the length of indices is N
+// each element of indices taking on values {0, ..., normalized_probs.size()}
+void multinomial_sample_indices(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *indices);
 
 #endif /* SRC_SAMPLING_UTILS_HPP_ */

@@ -91,6 +91,7 @@ void test_smc()
     int num_particles = 1000000;
     SMCOptions *options = new SMCOptions();
     options->essThreshold = 1;
+    options->resampling = SMCOptions::ResamplingScheme::STRATIFIED;
     SMC<int> smc(new DiscreteHMM(num_latent_states, mu, P, Q, obs), options);
     smc.run_smc(random, num_particles);
     ParticlePopulation<int> *pop = smc.get_curr_population();
