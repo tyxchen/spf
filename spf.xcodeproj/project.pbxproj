@@ -27,6 +27,9 @@
 
 /* Begin PBXFileReference section */
 		3D0DB00C20727AB50054B4BB /* test.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = test.hpp; path = "/Users/seonghwanjun/Google Drive/Research/smc-research/repos/spf/spf/test.hpp"; sourceTree = "<absolute>"; };
+		3D5B488920863B5B00240133 /* spf.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = spf.hpp; sourceTree = "<group>"; };
+		3D5B488B2086405200240133 /* compact_particle_population.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = compact_particle_population.hpp; sourceTree = "<group>"; };
+		3D5B488C208659C300240133 /* permutation_stream.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = permutation_stream.hpp; sourceTree = "<group>"; };
 		3DC9928120759FF800286755 /* smc_options.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = smc_options.hpp; sourceTree = "<group>"; };
 		3DC992822075AD4C00286755 /* particle_population.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = particle_population.hpp; sourceTree = "<group>"; };
 		3DD51B34207926A900966F46 /* resampling.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = resampling.hpp; sourceTree = "<group>"; };
@@ -81,6 +84,9 @@
 				3DDFEA46207166A60041358C /* sampling_utils.hpp */,
 				3DDFEA43207166A50041358C /* smc_model.hpp */,
 				3DDFEA3F207166A50041358C /* smc.hpp */,
+				3D5B488920863B5B00240133 /* spf.hpp */,
+				3D5B488C208659C300240133 /* permutation_stream.hpp */,
+				3D5B488B2086405200240133 /* compact_particle_population.hpp */,
 				3DD51B34207926A900966F46 /* resampling.hpp */,
 				3DC992822075AD4C00286755 /* particle_population.hpp */,
 				3DC9928120759FF800286755 /* smc_options.hpp */,

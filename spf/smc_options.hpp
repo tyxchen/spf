@@ -13,16 +13,20 @@ class SMCOptions
 {
 public:
     unsigned int num_particles = 1000;
+    unsigned int max_virtual_particles = 1000000;
+
     enum ResamplingScheme {
         MULTINOMIAL = 0,
         STRATIFIED = 1,
-        SYSTEMATIC = 2,
-        RESIDUAL = 3
+        SYSTEMATIC = 2
     };
     ResamplingScheme resampling = MULTINOMIAL;
     double essThreshold = 0.5;
     bool track_population = false;
-    
+
+    gsl_rng *resampling_random;
+    gsl_rng *main_random;
+
     // at some point, look into implementing multi-threading
     // unsigned int num_threads = 4;
 };

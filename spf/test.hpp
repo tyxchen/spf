@@ -18,6 +18,7 @@
 #include "smc.hpp"
 #include "smc_model.hpp"
 #include "smc_options.hpp"
+#include "spf.hpp"
 
 void test_numerical_utils();
 double *compare_resampling_schemes(long seed, int num_particles, vector<SMCOptions::ResamplingScheme> resamplingSchemes);
@@ -50,7 +51,7 @@ void test_smc()
     vector<int> latent;
     vector<int> obs;
 
-    gsl_rng* random = get_random(seed);
+    gsl_rng* random = generate_random_object(seed);
     
     /* uncomment to sample the transition and emission probs
     
@@ -151,6 +152,77 @@ void test_resampling_schemes()
     cout << vars[0] << ", " << vars[1] << ", " << vars[2] << endl;
 }
 
+void test_spf()
+{
+    long seed = 20180402;
+    int length = 3;
+    vector<double> mu({0.1, 0.4, 0.5});
+    vector<vector<double> > P({{0.2, 0.4, 0.4}, {0.1, 0.8, 0.1}, {0.9, 0.05, 0.05}});
+    vector<vector<double> > Q({{0.4, 0.1, 0.5}, {0.1, 0.1, 0.8}, {0.3, 0.2, 0.5}});
+    
+    unsigned long num_latent_states = mu.size();
+    //unsigned long num_obs_states = Q[0].size();
+    
+    vector<int> latent;
+    vector<int> obs;
+    
+    gsl_rng* random = generate_random_object(seed);
+    
+    int x_t = 0, y_t = 0;
+    for (int t = 0; t < length; t++)
+    {
+        if (t == 0) {
+            x_t = multinomial(random, mu);
+        } else {
+            x_t = multinomial(random, P[latent[t-1]]);
+        }
+        y_t = multinomial(random, Q[x_t]);
+        latent.push_back(x_t);
+        obs.push_back(y_t);
+        cout << x_t << "->" << y_t << endl;
+    }
+    
+    SMCOptions *options = new SMCOptions();
+    options->num_particles = 100000;
+    options->max_virtual_particles = 10000000;
+    options->essThreshold = 1.0;
+    options->resampling_random = generate_random_object(seed);
+    options->main_random = generate_random_object(1);
+    options->resampling = SMCOptions::ResamplingScheme::STRATIFIED;
+    SPF<int> spf(new DiscreteHMM(num_latent_states, mu, P, Q, obs), options);
+    spf.run_spf();
+    ParticlePopulation<int> *pop = spf.get_curr_population();
+    vector<int> *particles = pop->get_particles();
+    
+    // get the estimate of the marginal likelihood: p(y_{1:T})
+    double true_log_marginal_lik = -4.481802772037807;
+    double log_marginal_lik = spf.get_log_marginal_likelihood();
+    cout << "Estimated log p(y_{1:T}) = " << log_marginal_lik << endl;
+    cout << "True log p(y_{1:T}) = " << true_log_marginal_lik << endl;
+    cout << "Diff: " << abs(true_log_marginal_lik - log_marginal_lik) << endl;
+    
+    double probs_T[num_latent_states];
+    for (int n = 0; n < options->num_particles; n++)
+    {
+        probs_T[(*particles)[n]]++;
+    }
+    
+    double truth_T[]{0.41014761778484926, 0.16648987890038008, 0.4233625033147706};
+    double total_error = 0.0;
+    for (int i = 0; i < num_latent_states; i++)
+    {
+        probs_T[i] /= options->num_particles;
+        double err = abs(probs_T[i] - truth_T[i]);
+        total_error += err;
+        cout << "Estimated P(x_T = " << i << ") = " << probs_T[i] << endl;
+        cout << "True P(x_T = " << i << ") = " << truth_T[i] << endl;
+        cout << "Diff: " << err << endl;
+    }
+    cout << "total error: " << total_error << endl;
+    
+    // TODO: put this into a unit test framework
+}
+
 double *compare_resampling_schemes(long seed, int num_particles, vector<SMCOptions::ResamplingScheme> resamplingSchemes)
 {
     int length = 3;
@@ -164,7 +236,7 @@ double *compare_resampling_schemes(long seed, int num_particles, vector<SMCOptio
     vector<int> latent;
     vector<int> obs;
     
-    gsl_rng* random = get_random(seed);
+    gsl_rng* random = generate_random_object(seed);
     
     int x_t = 0, y_t = 0;
     for (int t = 0; t < length; t++)

@@ -19,7 +19,10 @@ template <typename P>
 void multinomial_resampling(const gsl_rng *random, const vector<double> *probs, int N, unsigned int *indices);
 void stratified_resampling(const gsl_rng *random, const vector<double> *probs, int N, unsigned int *indices);
 void systematic_resampling(const gsl_rng *random, const vector<double> *probs, int N, unsigned int *indices);
-void residual_resampling(const gsl_rng *random, const vector<double> *probs, int N, unsigned int *indices);
+
+double *multinomial_resampling(const gsl_rng *random, int N);
+double *stratified_resampling(const gsl_rng *random, int N);
+double *systematic_resampling(const gsl_rng *random, int N);
 
 void multinomial_resampling(const gsl_rng *random, const vector<double> *probs, int N, unsigned int *indices)
 {
@@ -70,33 +73,39 @@ void systematic_resampling(const gsl_rng *random, const vector<double> *probs, i
     }
 }
 
-// NOTE: Implementation not complete -- seems to be introducing bias
- void residual_resampling(const gsl_rng *random, const vector<double> *probs, int N, unsigned int *indices)
- {
- unsigned long population_size = probs->size();
- unsigned int N_i = 0;
- unsigned int R = 0;
- unsigned int idx = 0;
- vector<double> *residual_probs = new vector<double>();
- 
- // compute the residuals
- for (int i = 0; i < population_size; i++) {
- double Nw = N * (*probs)[i];
- N_i = (int)floor(Nw);
- residual_probs->push_back(Nw - N_i);
- R += N_i;
- for (int j = 0; j < N_i; j++) {
- indices[idx] = i;
- idx++;
- }
- }
- normalize_destructively(*residual_probs);
- multinomial_sample_indices(random, N-R, *residual_probs, indices + R);
- 
- // shuffle the indices?
- gsl_ran_shuffle(random, indices, N, sizeof(unsigned int));
- 
- delete residual_probs;
- }
+double *multinomial_resampling(const gsl_rng *random, int N)
+{
+    double *uvec = new double[N];
+    uniform(random, N, uvec); // N
+    sort(uvec, uvec + N); // N log N
+    return uvec;
+}
+
+double *stratified_resampling(const gsl_rng *random, int N)
+{
+    // draw N uniform numbers from (n/N, (n+1)/N]
+    double num_samples = (double)N;
+    double *u = new double[N];
+    for (int n = 0; n < N; n++) {
+        double a = n/num_samples;
+        double b = (n+1)/num_samples;
+        u[n] = gsl_ran_flat(random, a, b);
+    }
+    return u;
+}
+
+double *systematic_resampling(const gsl_rng *random, int N)
+{
+    double *u = new double[N];
+    double one_over_N = 1./N;
+    double initial_unif = gsl_ran_flat(random, 0, one_over_N);
+    double double_N = (double)N;
+    
+    for (int n = 0; n < N; n++) {
+        u[n] = (n - 1)/double_N + initial_unif;
+    }
+
+    return u;
+}
 
 #endif /* resampling_h */

@@ -10,7 +10,7 @@
 
 #include "sampling_utils.hpp"
 
-gsl_rng* get_random(long seed)
+gsl_rng* generate_random_object(long seed)
 {
 	// initialize random
     const gsl_rng_type * random_type = gsl_rng_default;

@@ -116,9 +116,6 @@ ParticlePopulation<P>* SMC<P>::resample(const gsl_rng *random, SMCOptions::Resam
         case SMCOptions::ResamplingScheme::SYSTEMATIC:
             systematic_resampling(random, pop->get_normalized_weights(), N, indices);
             break;
-        case SMCOptions::ResamplingScheme::RESIDUAL:
-            residual_resampling(random, pop->get_normalized_weights(), N, indices);
-            break;
     }
     
     vector<P> *curr_particles = pop->get_particles();

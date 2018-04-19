@@ -14,7 +14,9 @@
 
 using namespace std;
 
-gsl_rng* get_random(long seed);
+gsl_rng* generate_random_object(long seed);
+
+void uniform(const gsl_rng *random, unsigned int N, double *ret);
 
 // draw one sample and return the index of that sample {1, ..., normalized_probs.size()}
 int multinomial(const gsl_rng *random, vector<double> normalized_probs);
