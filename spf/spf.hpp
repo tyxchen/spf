@@ -57,20 +57,24 @@ void SPF<P>::run_spf()
     ParticlePopulation<P> *curr_pop = 0;
 
     log_marginal_likelihood = 0.0;
+    long seed;
+    PermutationStream *stream = new PermutationStream(options->num_particles);
     for (int r = 0; r < R; r++)
     {
-        PermutationStream stream(options->num_particles, gsl_rng_get(options->main_random));
+        seed = gsl_rng_get(options->main_random);
+        stream->set_seed(seed);
 
         // expansion
-        CompactParticlePopulation<P> compact_pop = propose_compact_population(stream, curr_pop, r);
+        CompactParticlePopulation<P> compact_pop = propose_compact_population(*stream, curr_pop, r);
         log_marginal_likelihood += compact_pop.logZ();
         cout << "ESS: " << compact_pop.ess() << ", sum_of_sq_weights: " << compact_pop.get_log_sum_of_square_weights() << ", nParticles: " << compact_pop.get_num_particles() << ", logZ: " << log_marginal_likelihood << endl;
 
         // contraction
-        stream.reset();
-        curr_pop = contraction(stream, curr_pop, compact_pop, options->num_particles, r);
+        stream->reset();
+        curr_pop = contraction(*stream, curr_pop, compact_pop, options->num_particles, r);
         populations->push_back(curr_pop);
     }
+    delete stream;
 }
 
 template<class P>
@@ -97,7 +101,7 @@ CompactParticlePopulation<P> SPF<P>::propose_compact_population(PermutationStrea
         }
         compact_pop.add_weight(ret.second);
     }
-    
+
     return compact_pop;
 }
 
@@ -109,7 +113,7 @@ ParticlePopulation<P> *SPF<P>::contraction(PermutationStream &stream, ParticlePo
     // draw N uniform values
     unsigned int idx = 0;
     double normalized_partial_sum = 0.0;
-    double *sorted_uniform = 0;
+    double *sorted_uniform = new double[N];
     pair<int, double> ret;
     double log_norm = compact_pop.get_log_sum_weights();
     
@@ -124,13 +128,13 @@ ParticlePopulation<P> *SPF<P>::contraction(PermutationStream &stream, ParticlePo
     switch (options->resampling)
     {
         case SMCOptions::ResamplingScheme::MULTINOMIAL:
-            sorted_uniform = multinomial_resampling(options->resampling_random, N);
+            multinomial_resampling_sorted_uniform(options->resampling_random, N, sorted_uniform);
             break;
         case SMCOptions::ResamplingScheme::STRATIFIED:
-            sorted_uniform = stratified_resampling(options->resampling_random, N);
+            stratified_resampling_sorted_uniform(options->resampling_random, N, sorted_uniform);
             break;
         case SMCOptions::ResamplingScheme::SYSTEMATIC:
-            sorted_uniform = systematic_resampling(options->resampling_random, N);
+            systematic_resampling_sorted_uniform(options->resampling_random, N, sorted_uniform);
             break;
     }
 
@@ -166,9 +170,9 @@ ParticlePopulation<P> *SPF<P>::contraction(PermutationStream &stream, ParticlePo
     cout << log_norm << " vs " << sanity_check.get_log_sum_weights() << endl;
     
     ParticlePopulation<P> *new_pop = new ParticlePopulation<P>(new_particles, new_log_weights);
+    delete [] sorted_uniform;
     return new_pop;
 
-    delete [] sorted_uniform;
 }
 
 template <class P>

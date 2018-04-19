@@ -159,10 +159,10 @@ void test_spf()
     vector<double> mu({0.1, 0.4, 0.5});
     vector<vector<double> > P({{0.2, 0.4, 0.4}, {0.1, 0.8, 0.1}, {0.9, 0.05, 0.05}});
     vector<vector<double> > Q({{0.4, 0.1, 0.5}, {0.1, 0.1, 0.8}, {0.3, 0.2, 0.5}});
-    
+
     unsigned long num_latent_states = mu.size();
     //unsigned long num_obs_states = Q[0].size();
-    
+
     vector<int> latent;
     vector<int> obs;
     
@@ -181,11 +181,11 @@ void test_spf()
         obs.push_back(y_t);
         cout << x_t << "->" << y_t << endl;
     }
-    
+
     SMCOptions *options = new SMCOptions();
-    options->num_particles = 100000;
+    options->num_particles = 10000;
     options->max_virtual_particles = 10000000;
-    options->essThreshold = 1.0;
+    options->essThreshold = DOUBLE_INF;
     options->resampling_random = generate_random_object(seed);
     options->main_random = generate_random_object(1);
     options->resampling = SMCOptions::ResamplingScheme::STRATIFIED;

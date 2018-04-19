@@ -16,35 +16,44 @@ using namespace std;
 
 class PermutationStream
 {
-    gsl_rng *random;
+    gsl_rng *random = 0;
     long seed;
     unsigned int *indices;
     unsigned int size;
     unsigned int num_calls;
 public:
-    PermutationStream(unsigned int size, long seed);
+    PermutationStream(unsigned int size);
     unsigned int pop();
     void reset();
+    void set_seed(long seed);
     inline gsl_rng *get_random() { return random; }
     ~PermutationStream();
 };
 
-PermutationStream::PermutationStream(unsigned int size, long seed)
+PermutationStream::PermutationStream(unsigned int size)
 {
-    this->seed = seed;
     this->size = size;
     this->indices = new unsigned int[size];
-    reset();
+    this->num_calls = 0;
+    this->random = generate_random_object(seed);
+    for (int i = 0; i < size; i++) {
+        indices[i] = i;
+    }
 }
 
 void PermutationStream::reset()
 {
-    this->random = generate_random_object(seed);
+    gsl_rng_set(random, seed);
     this->num_calls = 0;
     for (int i = 0; i < size; i++) {
         indices[i] = i;
     }
+}
 
+void PermutationStream::set_seed(long seed)
+{
+    this->seed = seed;
+    reset();
 }
 
 unsigned int PermutationStream::pop()
@@ -60,6 +69,8 @@ unsigned int PermutationStream::pop()
 
 PermutationStream::~PermutationStream()
 {
+    if (!random)
+        gsl_rng_free(random);
     delete indices;
 }
 

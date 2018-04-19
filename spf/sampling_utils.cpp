@@ -23,6 +23,7 @@ gsl_rng* generate_random_object(long seed)
 	random = gsl_rng_alloc(random_type);
 	gsl_rng_set(random, seed);
 	return random;
+    
 }
 
 int multinomial(const gsl_rng *random, vector<double> normalized_probs)
