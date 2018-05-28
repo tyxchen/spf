@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3D10EF7F20BBDF0200E28996 /* cancer_phylo_param.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D10EF7E20BBDF0200E28996 /* cancer_phylo_param.cpp */; };
+		3D10EF8220BC260300E28996 /* node.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D10EF8020BC260300E28996 /* node.cpp */; };
+		3D261B6820B58EC600ABF6A1 /* tssb_problem_spec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D261B6720B58EC600ABF6A1 /* tssb_problem_spec.cpp */; };
+		3D261B6A20B5985800ABF6A1 /* tssb_state.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D261B6920B5985800ABF6A1 /* tssb_state.cpp */; };
+		3DB78F0A20B821860074F395 /* somatic_mutation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DB78F0920B821860074F395 /* somatic_mutation.cpp */; };
 		3DDFEA382071668D0041358C /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DDFEA372071668D0041358C /* main.cpp */; };
 		3DDFEA48207166A60041358C /* sampling_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DDFEA40207166A50041358C /* sampling_utils.cpp */; };
 		3DDFEA49207166A60041358C /* discrete_hmm_model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DDFEA42207166A50041358C /* discrete_hmm_model.cpp */; };
@@ -27,9 +32,19 @@
 
 /* Begin PBXFileReference section */
 		3D0DB00C20727AB50054B4BB /* test.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = test.hpp; path = "/Users/seonghwanjun/Google Drive/Research/smc-research/repos/spf/spf/test.hpp"; sourceTree = "<absolute>"; };
+		3D10EF7E20BBDF0200E28996 /* cancer_phylo_param.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = cancer_phylo_param.cpp; sourceTree = "<group>"; };
+		3D10EF8020BC260300E28996 /* node.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = node.cpp; sourceTree = "<group>"; };
+		3D10EF8120BC260300E28996 /* node.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = node.hpp; sourceTree = "<group>"; };
+		3D261B6220B5828E00ABF6A1 /* tssb_problem_spec.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = tssb_problem_spec.hpp; sourceTree = "<group>"; };
+		3D261B6520B582D100ABF6A1 /* tssb_state.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = tssb_state.hpp; sourceTree = "<group>"; };
+		3D261B6620B5890200ABF6A1 /* somatic_mutation.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = somatic_mutation.hpp; sourceTree = "<group>"; };
+		3D261B6720B58EC600ABF6A1 /* tssb_problem_spec.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tssb_problem_spec.cpp; sourceTree = "<group>"; };
+		3D261B6920B5985800ABF6A1 /* tssb_state.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tssb_state.cpp; sourceTree = "<group>"; };
 		3D5B488920863B5B00240133 /* spf.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = spf.hpp; sourceTree = "<group>"; };
 		3D5B488B2086405200240133 /* compact_particle_population.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = compact_particle_population.hpp; sourceTree = "<group>"; };
 		3D5B488C208659C300240133 /* permutation_stream.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = permutation_stream.hpp; sourceTree = "<group>"; };
+		3DB78F0920B821860074F395 /* somatic_mutation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = somatic_mutation.cpp; sourceTree = "<group>"; };
+		3DB78F0C20B83B950074F395 /* cancer_phylo_param.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = cancer_phylo_param.hpp; sourceTree = "<group>"; };
 		3DC9928120759FF800286755 /* smc_options.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = smc_options.hpp; sourceTree = "<group>"; };
 		3DC992822075AD4C00286755 /* particle_population.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = particle_population.hpp; sourceTree = "<group>"; };
 		3DD51B34207926A900966F46 /* resampling.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = resampling.hpp; sourceTree = "<group>"; };
@@ -75,6 +90,14 @@
 		3DDFEA362071668D0041358C /* spf */ = {
 			isa = PBXGroup;
 			children = (
+				3D261B6520B582D100ABF6A1 /* tssb_state.hpp */,
+				3D261B6920B5985800ABF6A1 /* tssb_state.cpp */,
+				3D261B6620B5890200ABF6A1 /* somatic_mutation.hpp */,
+				3DB78F0920B821860074F395 /* somatic_mutation.cpp */,
+				3D261B6220B5828E00ABF6A1 /* tssb_problem_spec.hpp */,
+				3D261B6720B58EC600ABF6A1 /* tssb_problem_spec.cpp */,
+				3D10EF8020BC260300E28996 /* node.cpp */,
+				3D10EF8120BC260300E28996 /* node.hpp */,
 				3D0DB00C20727AB50054B4BB /* test.hpp */,
 				3DDFEA42207166A50041358C /* discrete_hmm_model.cpp */,
 				3DDFEA41207166A50041358C /* discrete_hmm_model.hpp */,
@@ -91,6 +114,8 @@
 				3DC992822075AD4C00286755 /* particle_population.hpp */,
 				3DC9928120759FF800286755 /* smc_options.hpp */,
 				3DDFEA372071668D0041358C /* main.cpp */,
+				3DB78F0C20B83B950074F395 /* cancer_phylo_param.hpp */,
+				3D10EF7E20BBDF0200E28996 /* cancer_phylo_param.cpp */,
 			);
 			path = spf;
 			sourceTree = "<group>";
@@ -152,10 +177,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3D10EF8220BC260300E28996 /* node.cpp in Sources */,
 				3DDFEA48207166A60041358C /* sampling_utils.cpp in Sources */,
 				3DDFEA382071668D0041358C /* main.cpp in Sources */,
+				3D261B6820B58EC600ABF6A1 /* tssb_problem_spec.cpp in Sources */,
+				3DB78F0A20B821860074F395 /* somatic_mutation.cpp in Sources */,
 				3DDFEA49207166A60041358C /* discrete_hmm_model.cpp in Sources */,
 				3DDFEA4A207166A60041358C /* numerical_utils.cpp in Sources */,
+				3D10EF7F20BBDF0200E28996 /* cancer_phylo_param.cpp in Sources */,
+				3D261B6A20B5985800ABF6A1 /* tssb_state.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -271,6 +301,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = /usr/local/include;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				OTHER_LDFLAGS = (
 					"-lgsl",
 					"-lgslcblas",
@@ -285,6 +316,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = /usr/local/include;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				OTHER_LDFLAGS = (
 					"-lgsl",
 					"-lgslcblas",

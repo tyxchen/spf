@@ -16,7 +16,15 @@ using namespace std;
 
 gsl_rng* generate_random_object(long seed);
 
+unsigned int sample_birth_death_process(gsl_rng *random, unsigned int num_individuals, double t, double birth_rate, double death_rate);
+
+double beta(const gsl_rng *random, double alpha, double beta);
+
 void uniform(const gsl_rng *random, unsigned int N, double *ret);
+double uniform(const gsl_rng *random);
+double uniform(const gsl_rng *random, double lower, double upper);
+
+int discrete_uniform(const gsl_rng *random, unsigned long N);
 
 // draw one sample and return the index of that sample {1, ..., normalized_probs.size()}
 int multinomial(const gsl_rng *random, vector<double> normalized_probs);

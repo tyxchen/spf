@@ -42,12 +42,59 @@ int multinomial(const gsl_rng *random, vector<double> normalized_probs)
     return -1;
 }
 
+unsigned int sample_birth_death_process(gsl_rng *random, unsigned int num_individuals, double t, double birth_rate, double death_rate)
+{
+    // first attempt
+    unsigned int num_deaths = 0;
+    unsigned int num_births = 0;
+    for (unsigned int i = 0; i < num_individuals; i++) {
+        if (gsl_ran_bernoulli(random, death_rate)) {
+            // death event occurred
+            num_deaths++;
+        } else {
+            // sample number of birth events from Poisson distribution
+            num_births += gsl_ran_poisson(random, birth_rate) + 1; // the original individual survives to the next generation
+        }
+    }
+    return num_births - num_deaths;
+}
+
+double beta(const gsl_rng *random, double alpha, double beta)
+{
+    return gsl_ran_beta(random, alpha, beta);
+}
+
+// samples an index from uniform distribution over discrete values {0, ..., N-1}
+int discrete_uniform(const gsl_rng *random, unsigned long N)
+{
+    double u = uniform(random);
+    double sum = 0.0;
+    const double incr = 1./N;
+    for (int i = 0; i < N; i++) {
+        sum += incr;
+        if (u < sum)
+            return i;
+    }
+    return -1; // error
+}
+
 void uniform(const gsl_rng *random, unsigned int N, double *ret)
 {
     for (int n = 0; n < N; n++)
     {
         ret[n] = gsl_rng_uniform(random);
     }
+}
+
+double uniform(const gsl_rng *random)
+{
+    return uniform(random, 0, 1);
+}
+
+double uniform(const gsl_rng *random, double lower, double upper)
+{
+    double u = gsl_ran_flat(random, lower, upper);
+    return u;
 }
 
 void multinomial(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *result)
