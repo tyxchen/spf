@@ -24,10 +24,11 @@ class PartialCancerPhylogenyState
     unordered_map<string, Node *, hash<Node>> *instantiated_nodes = 0;
     unordered_map<SomaticMutation, string, hash<SomaticMutation>> *assigned_data_points = 0;
     unordered_map<string, vector<SomaticMutation>> *node2data = 0;
-    unordered_map<string, double> *node2freq = 0;
+    unordered_map<string, vector<double>> *node2freq = 0;
     unordered_map<string, double> *node2nu_stick = 0;
     unordered_map<string, vector<double>> *node2psi_sticks = 0;
-    double assign_data_point_helper(gsl_rng * random, double u, int idx, CancerPhyloParameters &params);
+    double assign_data_point_helper(gsl_rng *random, double u, int idx, CancerPhyloParameters &params);
+    void sample_frequncy(gsl_rng *random, size_t num_samples, string curr_node_str, string parent_node_str);
     double compute_log_likelihood(gsl_rng *random, SomaticMutation &datum, string node_str, CancerPhyloParameters &params);
 public:
     PartialCancerPhylogenyState() = default;

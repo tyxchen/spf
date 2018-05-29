@@ -10,19 +10,21 @@
 #define somatic_mutation_h
 
 #include <string>
+#include <vector>
 
 using namespace std;
 
 class SomaticMutation
 {
-    unsigned int a;
-    unsigned int d;
+    vector<unsigned int> a;
+    vector<unsigned int> d;
 public:
     string id;
-    SomaticMutation(string id, unsigned int a, unsigned int d);
+    SomaticMutation(string id, vector<unsigned int> &a, vector<unsigned int> &d);
     SomaticMutation(const SomaticMutation &src);
-    unsigned int get_a() { return a; }
-    unsigned int get_d() { return d; }
+    unsigned int get_a(size_t sample_idx);
+    unsigned int get_d(size_t sample_idx);
+    size_t num_samples();
     bool operator==(const SomaticMutation &other) const
     {
         return (id == other.id);

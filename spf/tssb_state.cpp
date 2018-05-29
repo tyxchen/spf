@@ -30,13 +30,22 @@ PartialCancerPhylogenyState::PartialCancerPhylogenyState(PartialCancerPhylogenyS
     this->instantiated_nodes = src.instantiated_nodes;
 }
 
+void PartialCancerPhylogenyState::sample_frequncy(gsl_rng *random, size_t num_samples, string curr_node_str, string parent_node_str)
+{
+    // sample from prior for the time being
+    for (size_t i = 0; i < num_samples; i++) {
+        (*node2freq)[curr_node_str].push_back(uniform(random, 0.0, (*node2freq)[parent_node_str][i])); // sample frequency from the prior
+        (*node2freq)[parent_node_str][i] -= (*node2freq)[curr_node_str][i]; // update the parent's frequency
+    }
+}
+
 double PartialCancerPhylogenyState::assign_data_point_helper(gsl_rng *random, double u, int idx, CancerPhyloParameters &params)
 {
     // find the node corresponding to u (similar to algorithm of Adams et. al. (2010))
     // generate copy number variation via forward simulation using birth death process
     // compute and return the likelihood
     
-    // 1. assigning the data to a node:
+    // assigning the data to a node:
     // start with the root, i.e., node_str = "0"
     // enumerate the branching sticks i in node2psi_sticks[node_str] and compute the corresponding interval, check if u falls in the interval
     // extend node_str as node_str += to_string(i);
@@ -48,8 +57,7 @@ double PartialCancerPhylogenyState::assign_data_point_helper(gsl_rng *random, do
             // draw new nu stick and sample frequency param for this node
             (*node2nu_stick)[node_str] = beta(random, 1, params.alpha(node_str)); // nu-stick
             string parent_node_str = node_str.substr(0, node_str.length() - 1);
-            (*node2freq)[node_str] = uniform(random, 0.0, (*node2freq)[parent_node_str]); // sample frequency from the prior
-            (*node2freq)[parent_node_str] -= (*node2freq)[node_str]; // update the parent's frequency
+            sample_frequncy(random, (*unassigned_data_points)[idx].num_samples(), node_str, parent_node_str);
             // TODO: sample the frequencies outside of the outer-while using say nested SMC?
         }
         nu = (*node2nu_stick)[node_str];
@@ -99,8 +107,9 @@ double PartialCancerPhylogenyState::assign_data_point_helper(gsl_rng *random, do
 
 double PartialCancerPhylogenyState::compute_log_likelihood(gsl_rng *random, SomaticMutation &datum, string node_str, CancerPhyloParameters &params)
 {
-    double prevalence = 0.0;
-    double prob_obs_ref = 0.0; // probability of observing reference allele
+    size_t num_samples = datum.num_samples();
+    double prevalence[num_samples];
+    double prob_obs_ref[num_samples]; // probability of observing reference allele
     queue<string> q;
     size_t len;
     q.push(node_str);
@@ -125,8 +134,10 @@ double PartialCancerPhylogenyState::compute_log_likelihood(gsl_rng *random, Soma
         curr_node.set_cn_profile(datum, cn_ref, cn_var);
         (*instantiated_nodes)[node_str] = &curr_node; // update the instantiated_nodes to point to the newly modified copy
 
-        prevalence += (*node2freq)[curr_node_str];
-        prob_obs_ref += (*node2freq)[curr_node_str] * cn_ref / (cn_ref + cn_var);
+        for (size_t i = 0; i < num_samples; i++) {
+            prevalence[i] += (*node2freq)[curr_node_str][i];
+            prob_obs_ref[i] += (*node2freq)[curr_node_str][i] * cn_ref / (cn_ref + cn_var);
+        }
 
          // enumerate over the psi-sticks for the current node
         len = this->node2psi_sticks->size();
@@ -137,8 +148,12 @@ double PartialCancerPhylogenyState::compute_log_likelihood(gsl_rng *random, Soma
             }
         }
     }
-    prob_obs_ref += (1 - prevalence);
-    return log2(gsl_ran_binomial_pdf(datum.get_a(), prob_obs_ref, datum.get_d()));
+    double logw = 0.0;
+    for (size_t i = 0; i < num_samples; i++) {
+        prob_obs_ref[i] += (1 - prevalence[i]);
+        logw += log2(gsl_ran_binomial_pdf(datum.get_a(i), prob_obs_ref[i], datum.get_d(i)));
+    }
+    return logw;
 
     // TODO: use nested SMC idea to generate the copy number variation?
 }

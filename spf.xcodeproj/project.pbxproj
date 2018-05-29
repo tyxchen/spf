@@ -11,6 +11,7 @@
 		3D10EF8220BC260300E28996 /* node.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D10EF8020BC260300E28996 /* node.cpp */; };
 		3D261B6820B58EC600ABF6A1 /* tssb_problem_spec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D261B6720B58EC600ABF6A1 /* tssb_problem_spec.cpp */; };
 		3D261B6A20B5985800ABF6A1 /* tssb_state.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D261B6920B5985800ABF6A1 /* tssb_state.cpp */; };
+		3D5C543F20BD77EF00F707A8 /* reader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D5C543D20BD77EF00F707A8 /* reader.cpp */; };
 		3DB78F0A20B821860074F395 /* somatic_mutation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DB78F0920B821860074F395 /* somatic_mutation.cpp */; };
 		3DDFEA382071668D0041358C /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DDFEA372071668D0041358C /* main.cpp */; };
 		3DDFEA48207166A60041358C /* sampling_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DDFEA40207166A50041358C /* sampling_utils.cpp */; };
@@ -43,6 +44,9 @@
 		3D5B488920863B5B00240133 /* spf.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = spf.hpp; sourceTree = "<group>"; };
 		3D5B488B2086405200240133 /* compact_particle_population.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = compact_particle_population.hpp; sourceTree = "<group>"; };
 		3D5B488C208659C300240133 /* permutation_stream.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = permutation_stream.hpp; sourceTree = "<group>"; };
+		3D5C543D20BD77EF00F707A8 /* reader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = reader.cpp; sourceTree = "<group>"; };
+		3D5C543E20BD77EF00F707A8 /* reader.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = reader.hpp; sourceTree = "<group>"; };
+		3D5C544020BD7B5E00F707A8 /* input */ = {isa = PBXFileReference; lastKnownFileType = folder; path = input; sourceTree = "<group>"; };
 		3DB78F0920B821860074F395 /* somatic_mutation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = somatic_mutation.cpp; sourceTree = "<group>"; };
 		3DB78F0C20B83B950074F395 /* cancer_phylo_param.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = cancer_phylo_param.hpp; sourceTree = "<group>"; };
 		3DC9928120759FF800286755 /* smc_options.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = smc_options.hpp; sourceTree = "<group>"; };
@@ -74,6 +78,7 @@
 		3DDFEA2B2071668D0041358C = {
 			isa = PBXGroup;
 			children = (
+				3D5C544020BD7B5E00F707A8 /* input */,
 				3DDFEA362071668D0041358C /* spf */,
 				3DDFEA352071668D0041358C /* Products */,
 			);
@@ -114,6 +119,8 @@
 				3DC992822075AD4C00286755 /* particle_population.hpp */,
 				3DC9928120759FF800286755 /* smc_options.hpp */,
 				3DDFEA372071668D0041358C /* main.cpp */,
+				3D5C543D20BD77EF00F707A8 /* reader.cpp */,
+				3D5C543E20BD77EF00F707A8 /* reader.hpp */,
 				3DB78F0C20B83B950074F395 /* cancer_phylo_param.hpp */,
 				3D10EF7E20BBDF0200E28996 /* cancer_phylo_param.cpp */,
 			);
@@ -177,6 +184,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3D5C543F20BD77EF00F707A8 /* reader.cpp in Sources */,
 				3D10EF8220BC260300E28996 /* node.cpp in Sources */,
 				3DDFEA48207166A60041358C /* sampling_utils.cpp in Sources */,
 				3DDFEA382071668D0041358C /* main.cpp in Sources */,

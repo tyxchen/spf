@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <vector>
 #include <gsl/gsl_randist.h>
+#include <string>
 
 #include "discrete_hmm_model.hpp"
 #include "numerical_utils.hpp"
@@ -111,6 +112,11 @@ void test_find_node(gsl_rng *random, double u, CancerPhyloParameters params)
     }
 }
 
+void test_tssb()
+{
+    
+}
+
 int main()
 {
     //test_gsl();
@@ -125,8 +131,9 @@ int main()
     gsl_rng *random = generate_random_object(11);
     test_find_node(random, 0.7, params);
      */
+    
+    test_tssb();
 	return 0;
 }
-
 
 
