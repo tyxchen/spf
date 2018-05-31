@@ -32,9 +32,10 @@ class PartialCancerPhylogenyState
     double compute_log_likelihood(gsl_rng *random, SomaticMutation &datum, string node_str, CancerPhyloParameters &params);
 public:
     PartialCancerPhylogenyState() = default;
-    PartialCancerPhylogenyState(vector<SomaticMutation> data_points);
+    PartialCancerPhylogenyState(vector<SomaticMutation> *data_points);
     PartialCancerPhylogenyState(PartialCancerPhylogenyState &src); // make a deep copy
-    std::pair<PartialCancerPhylogenyState *, double> assign_data_point(gsl_rng *random, CancerPhyloParameters &params);
+    double assign_data_point(gsl_rng *random, CancerPhyloParameters &params);
+    string print();
 };
 
 #endif /* TSSBState_h */

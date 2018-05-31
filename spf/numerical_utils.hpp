@@ -19,6 +19,7 @@ const double DOUBLE_INF = std::numeric_limits<double>::infinity();
 const double DOUBLE_NEG_INF = -std::numeric_limits<double>::infinity();
 
 // returns log sum as by-product
+double log_binomial_pdf(const unsigned int k, const double p, const unsigned int n);
 double normalize(vector<double> &log_weights, vector<double> &weights);
 double normalize_destructively(vector<double> &log_weights);
 double normalize_destructively(double *log_weights, int size);

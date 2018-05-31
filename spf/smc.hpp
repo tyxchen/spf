@@ -58,12 +58,17 @@ void SMC<P>::run_smc(gsl_rng *random, unsigned int num_particles)
     double log_num_particles = log(num_particles);
     for (int r = 0; r < R; r++)
     {
+        cout << "iter: " << r << endl;
         curr_pop = propose(random, curr_pop, r, num_particles);
         populations->push_back(curr_pop);
         if (!options->track_population && r > 0) {
             delete (*populations)[r-1]; // delete the ParticlePopulation (particles, log_weights, and normalized_weights)
         }
         log_marginal_likelihood += (curr_pop->get_log_norm() - log_num_particles);
+        if (r == R - 1 && options->resample_last_round == false) {
+            break;
+        }
+        
         if (curr_pop->get_ess() <= options->essThreshold) {
             // resample
             curr_pop = resample(random, options->resampling, curr_pop, num_particles);
@@ -85,7 +90,7 @@ ParticlePopulation<P>* SMC<P>::propose(gsl_rng *random, ParticlePopulation<P> *p
     vector<P> *new_particles = new vector<P>(num_proposals);
     vector<double> *new_log_weights = new vector<double>(num_proposals);
 
-    std::pair<int, double> ret;
+    std::pair<P, double> ret;
     for (int n = 0; n < num_proposals; n++)
     {
         if (pop == 0) {

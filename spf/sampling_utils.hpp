@@ -16,7 +16,7 @@ using namespace std;
 
 gsl_rng* generate_random_object(long seed);
 
-unsigned int sample_birth_death_process(gsl_rng *random, unsigned int num_individuals, double t, double birth_rate, double death_rate);
+int sample_birth_death_process(gsl_rng *random, unsigned int num_individuals, double t, double birth_rate, double death_rate);
 
 double beta(const gsl_rng *random, double alpha, double beta);
 

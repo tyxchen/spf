@@ -6,8 +6,37 @@
  */
 
 #include <math.h>
+#include <gsl/gsl_sf.h>
 
 #include "numerical_utils.hpp"
+
+double log_binomial_pdf(const unsigned int k, const double p, const unsigned int n)
+{
+    if (k > n)
+    {
+        return 0;
+    }
+    else
+    {
+        double logP;
+        
+        if (p == 0)
+        {
+            logP = (k == 0) ? 0 : DOUBLE_NEG_INF;
+        }
+        else if (p == 1)
+        {
+            logP = (k == n) ? 0 : DOUBLE_NEG_INF;
+        }
+        else
+        {
+            double ln_Cnk = gsl_sf_lnchoose (n, k);
+            logP = ln_Cnk + k * log (p) + (n - k) * log1p(-p);
+        }
+        
+        return logP;
+    }
+}
 
 double normalize(vector<double> &log_weights, vector<double> &weights)
 {

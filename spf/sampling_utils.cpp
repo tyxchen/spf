@@ -42,7 +42,7 @@ int multinomial(const gsl_rng *random, vector<double> normalized_probs)
     return -1;
 }
 
-unsigned int sample_birth_death_process(gsl_rng *random, unsigned int num_individuals, double t, double birth_rate, double death_rate)
+int sample_birth_death_process(gsl_rng *random, unsigned int num_individuals, double t, double birth_rate, double death_rate)
 {
     // first attempt
     unsigned int num_deaths = 0;
@@ -53,7 +53,7 @@ unsigned int sample_birth_death_process(gsl_rng *random, unsigned int num_indivi
             num_deaths++;
         } else {
             // sample number of birth events from Poisson distribution
-            num_births += gsl_ran_poisson(random, birth_rate) + 1; // the original individual survives to the next generation
+            num_births += gsl_ran_poisson(random, birth_rate);
         }
     }
     return num_births - num_deaths;

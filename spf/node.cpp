@@ -11,6 +11,8 @@
 Node::Node(string name)
 {
     this->name = name;
+    this->cn_ref = new unordered_map<SomaticMutation, unsigned int>();
+    this->cn_var = new unordered_map<SomaticMutation, unsigned int>();
 }
 
 Node::Node(const Node &src)

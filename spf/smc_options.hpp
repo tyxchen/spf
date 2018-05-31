@@ -23,6 +23,7 @@ public:
     ResamplingScheme resampling = MULTINOMIAL;
     double essThreshold = 0.5;
     bool track_population = false;
+    bool resample_last_round = false;
 
     gsl_rng *resampling_random;
     gsl_rng *main_random;

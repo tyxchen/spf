@@ -6,12 +6,13 @@
 //  Copyright © 2018 Seong-Hwan Jun. All rights reserved.
 //
 
+#include <iostream>
 #include "tssb_problem_spec.hpp"
 
-TSSBProblemSpecification::TSSBProblemSpecification(vector<SomaticMutation> data_points, CancerPhyloParameters &params) :
+TSSBProblemSpecification::TSSBProblemSpecification(vector<SomaticMutation> *data_points, CancerPhyloParameters &params) :
 params{params}
 {
-    this->num_ssms = data_points.size();
+    this->num_ssms = data_points->size();
     this->initial_state = new PartialCancerPhylogenyState(data_points);
 }
 
@@ -20,11 +21,14 @@ unsigned long TSSBProblemSpecification::num_iterations() {
 }
 
 std::pair<PartialCancerPhylogenyState*, double> TSSBProblemSpecification::propose_initial(gsl_rng *random) {
-    return make_pair(initial_state, 0.0);
+    return propose_next(random, 0, initial_state);
 }
 
-std::pair<PartialCancerPhylogenyState*, double> TSSBProblemSpecification::propose_next(gsl_rng *random, int t, PartialCancerPhylogenyState curr) {
-    return curr.assign_data_point(random, params);
+std::pair<PartialCancerPhylogenyState*, double> TSSBProblemSpecification::propose_next(gsl_rng *random, int t, PartialCancerPhylogenyState *curr) {
+    // make a copy of the current state
+    PartialCancerPhylogenyState *new_state = new PartialCancerPhylogenyState(*curr);
+    double ret = new_state->assign_data_point(random, params);
+    return make_pair(new_state, ret);
 }
 
 TSSBProblemSpecification::~TSSBProblemSpecification() { }

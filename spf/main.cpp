@@ -5,21 +5,31 @@
  *      Author: seonghwanjun
  */
 
+#include <unistd.h>
+#include <fstream>
 #include <iostream>
 #include <iterator>
 #include <math.h>
 #include <unordered_map>
 #include <vector>
-#include <gsl/gsl_randist.h>
 #include <string>
+
+#include <boost/regex.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/regex.hpp>
+
+#include <gsl/gsl_randist.h>
 
 #include "discrete_hmm_model.hpp"
 #include "numerical_utils.hpp"
 #include "sampling_utils.hpp"
+#include "somatic_mutation.hpp"
 #include "smc.hpp"
 #include "smc_model.hpp"
 #include "test.hpp"
 #include "cancer_phylo_param.hpp"
+#include "tssb_state.hpp"
+#include "tssb_problem_spec.hpp"
 
 using namespace std;
 
@@ -112,14 +122,96 @@ void test_find_node(gsl_rng *random, double u, CancerPhyloParameters params)
     }
 }
 
-void test_tssb()
+void test_boost()
 {
+    string s = "a,b, c ,,e,f,";
+    vector <string> fields;
     
+    cout << "Original = \"" << s << "\"\n\n";
+    
+    cout << "Split on \',\' only\n";
+    boost::split( fields, s, boost::is_any_of( "," ) );
+    cout << fields[0] << endl;
+}
+
+vector<SomaticMutation> *read_test_ssm()
+{
+    //char *dir = getcwd(NULL, 0);
+    //printf("Current dir: %s", dir);
+
+    // use the sample data from phylowgs
+    ifstream file;
+    file.open("/Users/seonghwanjun/Google Drive/Research/smc-research/repos/spf/input/test_ssm_data.txt");
+    string line;
+    vector<string> fields1;
+    vector<string> fields2;
+    vector<SomaticMutation> *ret = new vector<SomaticMutation>();
+    if (file.is_open()) {
+        unsigned int line_no = 0;
+        while (getline(file, line)) {
+            line_no++;
+            if (line_no == 1)
+                continue;
+
+            //cout << line << endl;
+            boost::split(fields1, line, boost::is_any_of("\t"));
+            boost::split(fields2, fields1[2], boost::is_any_of(","));
+            vector<unsigned int> a;
+            for (size_t i = 0; i < fields2.size(); i++) {
+                a.push_back(stoi(fields2[i]));
+            }
+            boost::split(fields2, fields1[3], boost::is_any_of(","));
+            vector<unsigned int> d;
+            for (size_t i = 0; i < fields2.size(); i++) {
+                d.push_back(stoi(fields2[i]));
+            }
+            SomaticMutation ssm(fields1[0], a, d);
+            cout << ssm.print() << endl;
+            ret->push_back(ssm);
+        }
+        file.close();
+    } else {
+        cout << "not here!" << endl;
+    }
+    return ret;
+}
+
+void test_tssb(vector<SomaticMutation> *ssms)
+{
+    // initialize the problem specification
+    long seed = 12;
+    gsl_rng* random = generate_random_object(seed);
+    int num_particles = 10;
+    SMCOptions *options = new SMCOptions();
+    options->essThreshold = 1;
+    options->resampling = SMCOptions::ResamplingScheme::STRATIFIED;
+    CancerPhyloParameters params;
+    params.gamma = 1.0;
+    params.lambda = 0.9;
+    params.alpha_0 = 2.0;
+    params.birth_rate = 0.05;
+    params.death_rate = 0.001;
+    params.sequencing_error_prob = 1e-3;
+
+    TSSBProblemSpecification *problem_spec = new TSSBProblemSpecification(ssms, params);
+    SMC<PartialCancerPhylogenyState *> smc(problem_spec, options);
+    
+    smc.run_smc(random, num_particles);
+    
+    ParticlePopulation<PartialCancerPhylogenyState *> *pop = smc.get_curr_population();
+    vector<PartialCancerPhylogenyState *> *states = pop->get_particles();
+    vector<double> *weights = pop->get_log_weights();
+    for (size_t i = 0; i < states->size(); i++) {
+        PartialCancerPhylogenyState *state = (*states)[i];
+        cout << weights->at(i) << endl;
+        cout << state->print() << endl;
+    }
 }
 
 int main()
 {
     //test_gsl();
+    //test_boost();
     //test_spf();
     //test_smc();
     //test_resampling_schemes();
@@ -132,7 +224,9 @@ int main()
     test_find_node(random, 0.7, params);
      */
     
-    test_tssb();
+    vector<SomaticMutation> *ssms = read_test_ssm();
+    test_tssb(ssms);
+    
 	return 0;
 }
 

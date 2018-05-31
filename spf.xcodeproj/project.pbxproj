@@ -41,12 +41,12 @@
 		3D261B6620B5890200ABF6A1 /* somatic_mutation.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = somatic_mutation.hpp; sourceTree = "<group>"; };
 		3D261B6720B58EC600ABF6A1 /* tssb_problem_spec.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tssb_problem_spec.cpp; sourceTree = "<group>"; };
 		3D261B6920B5985800ABF6A1 /* tssb_state.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tssb_state.cpp; sourceTree = "<group>"; };
+		3D54C67320BD8F9B00B83BF9 /* ssm_data.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ssm_data.txt; sourceTree = "<group>"; };
 		3D5B488920863B5B00240133 /* spf.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = spf.hpp; sourceTree = "<group>"; };
 		3D5B488B2086405200240133 /* compact_particle_population.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = compact_particle_population.hpp; sourceTree = "<group>"; };
 		3D5B488C208659C300240133 /* permutation_stream.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = permutation_stream.hpp; sourceTree = "<group>"; };
 		3D5C543D20BD77EF00F707A8 /* reader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = reader.cpp; sourceTree = "<group>"; };
 		3D5C543E20BD77EF00F707A8 /* reader.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = reader.hpp; sourceTree = "<group>"; };
-		3D5C544020BD7B5E00F707A8 /* input */ = {isa = PBXFileReference; lastKnownFileType = folder; path = input; sourceTree = "<group>"; };
 		3DB78F0920B821860074F395 /* somatic_mutation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = somatic_mutation.cpp; sourceTree = "<group>"; };
 		3DB78F0C20B83B950074F395 /* cancer_phylo_param.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = cancer_phylo_param.hpp; sourceTree = "<group>"; };
 		3DC9928120759FF800286755 /* smc_options.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = smc_options.hpp; sourceTree = "<group>"; };
@@ -75,10 +75,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3D54C67220BD8F8600B83BF9 /* input */ = {
+			isa = PBXGroup;
+			children = (
+				3D54C67320BD8F9B00B83BF9 /* ssm_data.txt */,
+			);
+			path = input;
+			sourceTree = "<group>";
+		};
 		3DDFEA2B2071668D0041358C = {
 			isa = PBXGroup;
 			children = (
-				3D5C544020BD7B5E00F707A8 /* input */,
+				3D54C67220BD8F8600B83BF9 /* input */,
 				3DDFEA362071668D0041358C /* spf */,
 				3DDFEA352071668D0041358C /* Products */,
 			);
@@ -153,6 +161,9 @@
 		3DDFEA2C2071668D0041358C /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				KnownAssetTags = (
+					New,
+				);
 				LastUpgradeCheck = 0920;
 				ORGANIZATIONNAME = "Seong-Hwan Jun";
 				TargetAttributes = {
@@ -307,11 +318,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					/usr/local/Cellar/boost/1.66.0/include,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					/usr/local/Cellar/boost/1.66.0/lib,
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				OTHER_LDFLAGS = (
 					"-lgsl",
+					"-lboost_regex",
 					"-lgslcblas",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -322,11 +340,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					/usr/local/Cellar/boost/1.66.0/include,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					/usr/local/Cellar/boost/1.66.0/lib,
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				OTHER_LDFLAGS = (
 					"-lgsl",
+					"-lboost_regex",
 					"-lgslcblas",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";

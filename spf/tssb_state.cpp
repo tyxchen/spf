@@ -8,34 +8,54 @@
 
 #include <cmath>
 #include <queue>
+#include <vector>
+
 #include <gsl/gsl_randist.h>
+
 #include "tssb_state.hpp"
+#include "numerical_utils.hpp"
 #include "sampling_utils.hpp"
 
-PartialCancerPhylogenyState::PartialCancerPhylogenyState(vector<SomaticMutation> data_points)
+PartialCancerPhylogenyState::PartialCancerPhylogenyState(vector<SomaticMutation> *data_points)
 {
-    this->unassigned_data_points = &data_points; // for vector, assignment results in deep copy of the elements
+    this->unassigned_data_points = data_points; // for vector, assignment results in deep copy of the elements
+
+    instantiated_nodes = new unordered_map<string, Node *, hash<Node>>();
+    assigned_data_points = new unordered_map<SomaticMutation, string, hash<SomaticMutation>>();
+    node2data = new unordered_map<string, vector<SomaticMutation>>();
+    node2freq = new unordered_map<string, vector<double>>();
+    node2nu_stick = new unordered_map<string, double>();
+    node2psi_sticks = new unordered_map<string, vector<double>>();
 }
 
 PartialCancerPhylogenyState::PartialCancerPhylogenyState(PartialCancerPhylogenyState &src)
 {
     // make a deep copy of the state variables
     // vectors and maps will copy over the elements via overloading of = operator
-    this->unassigned_data_points = src.unassigned_data_points;
-    this->assigned_data_points = src.assigned_data_points;
-    this->node2nu_stick = src.node2nu_stick;
-    this->node2psi_sticks = src.node2psi_sticks;
-    this->node2data = src.node2data;
-    this->node2freq = src.node2freq;
-    this->instantiated_nodes = src.instantiated_nodes;
+    this->unassigned_data_points = new vector<SomaticMutation>(*src.unassigned_data_points);
+    this->assigned_data_points = new unordered_map<SomaticMutation, string, hash<SomaticMutation>>(*src.assigned_data_points);
+    this->node2nu_stick = new unordered_map<string, double>(*src.node2nu_stick);
+    this->node2psi_sticks = new unordered_map<string, vector<double>>(*src.node2psi_sticks);
+    this->node2data = new unordered_map<string, vector<SomaticMutation>>(*src.node2data);
+    this->node2freq = new unordered_map<string, vector<double>>(*src.node2freq);
+    this->instantiated_nodes = new unordered_map<string, Node *, hash<Node>>(*src.instantiated_nodes);
 }
 
 void PartialCancerPhylogenyState::sample_frequncy(gsl_rng *random, size_t num_samples, string curr_node_str, string parent_node_str)
 {
-    // sample from prior for the time being
-    for (size_t i = 0; i < num_samples; i++) {
-        (*node2freq)[curr_node_str].push_back(uniform(random, 0.0, (*node2freq)[parent_node_str][i])); // sample frequency from the prior
-        (*node2freq)[parent_node_str][i] -= (*node2freq)[curr_node_str][i]; // update the parent's frequency
+    if (curr_node_str == "0") {
+        // this call takes place for the first data point
+        for (size_t i = 0; i < num_samples; i++) {
+            (*node2freq)[curr_node_str].push_back(uniform(random, 0.0, 1.0)); // sample frequency from the prior
+        }
+    } else {
+        // sample from prior for the time being: Uniform(0, parent_freq - \sum sibling_freq)
+        for (size_t i = 0; i < num_samples; i++) {
+            double parent_freq = (*node2freq)[parent_node_str][i];
+            double new_freq = uniform(random, 0.0, parent_freq); // no need to consider sibling frequencies because they have already been subtracted out
+            (*node2freq)[curr_node_str].push_back(new_freq); // sample frequency from the prior
+            (*node2freq)[parent_node_str][i] -= (*node2freq)[curr_node_str][i]; // update the parent's frequency
+        }
     }
 }
 
@@ -44,7 +64,7 @@ double PartialCancerPhylogenyState::assign_data_point_helper(gsl_rng *random, do
     // find the node corresponding to u (similar to algorithm of Adams et. al. (2010))
     // generate copy number variation via forward simulation using birth death process
     // compute and return the likelihood
-    
+
     // assigning the data to a node:
     // start with the root, i.e., node_str = "0"
     // enumerate the branching sticks i in node2psi_sticks[node_str] and compute the corresponding interval, check if u falls in the interval
@@ -89,9 +109,10 @@ double PartialCancerPhylogenyState::assign_data_point_helper(gsl_rng *random, do
             cum_prod *= (1 - psi_sticks[j]);
             j++;
         }
+        (*node2psi_sticks)[node_str] = psi_sticks;
 
         // if j corresponds to a new node, draw a nu stick for it, draw frequency param and update data structures accordingly
-        // update local variables node_str, u, nu, psi_sticks
+        // update local variables node_str, psi_sticks
         node_str += to_string(j);
     }
 
@@ -99,7 +120,6 @@ double PartialCancerPhylogenyState::assign_data_point_helper(gsl_rng *random, do
     SomaticMutation datum = (*unassigned_data_points)[idx];
     (*assigned_data_points)[datum] = node_str;
     (*node2data)[node_str].push_back(datum);
-    (*unassigned_data_points).erase((*unassigned_data_points).begin() + idx);
 
     // compute the likelihood by simulating the copy number profile and all descendents with nu-stick instantiated
     return compute_log_likelihood(random, datum, node_str, params);
@@ -118,21 +138,25 @@ double PartialCancerPhylogenyState::compute_log_likelihood(gsl_rng *random, Soma
     // initially there are 2 reference alleles
     // we subtract by 1 since one of them turns to variant
     // for variant allele, it starts off with 1
-    unsigned int cn_ref = sample_birth_death_process(random, 2, node_str.length()-1, params.birth_rate, params.death_rate) - 1;
-    unsigned int cn_var = 1;
+    int num_copies = 2 + sample_birth_death_process(random, 2, node_str.length()-1, params.birth_rate, params.death_rate);
+    unsigned int cn_ref = num_copies > 0 ? num_copies - 1 : 0;
+    unsigned int cn_var = num_copies > 0 ? 1 : 0;
     while (q.size() > 0) {
         string curr_node_str = q.front();
         q.pop();
 
+        Node *curr_node;
         if (!instantiated_nodes->count(curr_node_str)) { // check to ensure that node is already instantiated, if not, instantiate it
-            (*instantiated_nodes)[node_str] = new Node(curr_node_str);
+            curr_node = new Node(curr_node_str);
+            (*instantiated_nodes)[curr_node_str] = curr_node;
+        } else {
+            curr_node = new Node(*(*instantiated_nodes)[curr_node_str]); // make a copy of the Node object
         }
-
-        Node curr_node(*(*instantiated_nodes)[node_str]); // make a copy of the Node object
-        cn_ref = sample_birth_death_process(random, cn_ref, 1, params.birth_rate, params.death_rate);
-        cn_var = sample_birth_death_process(random, cn_var, 1, params.birth_rate, params.death_rate);
-        curr_node.set_cn_profile(datum, cn_ref, cn_var);
-        (*instantiated_nodes)[node_str] = &curr_node; // update the instantiated_nodes to point to the newly modified copy
+        
+        cn_ref += sample_birth_death_process(random, cn_ref, 1, params.birth_rate, params.death_rate);
+        cn_var += sample_birth_death_process(random, cn_var, 1, params.birth_rate, params.death_rate);
+        curr_node->set_cn_profile(datum, cn_ref, cn_var);
+        (*instantiated_nodes)[curr_node_str] = curr_node; // update the instantiated_nodes to point to the newly modified copy
 
         for (size_t i = 0; i < num_samples; i++) {
             prevalence[i] += (*node2freq)[curr_node_str][i];
@@ -140,7 +164,7 @@ double PartialCancerPhylogenyState::compute_log_likelihood(gsl_rng *random, Soma
         }
 
          // enumerate over the psi-sticks for the current node
-        len = this->node2psi_sticks->size();
+        len = (*node2psi_sticks)[curr_node_str].size();
         for (size_t i = 0; i < len; i++) {
             // if nu-stick is sampled, then there is at least one data point assigned to this node or one of its descendants
             if (node2nu_stick->count(curr_node_str + to_string(i))) {
@@ -151,23 +175,34 @@ double PartialCancerPhylogenyState::compute_log_likelihood(gsl_rng *random, Soma
     double logw = 0.0;
     for (size_t i = 0; i < num_samples; i++) {
         prob_obs_ref[i] += (1 - prevalence[i]);
-        logw += log2(gsl_ran_binomial_pdf(datum.get_a(i), prob_obs_ref[i], datum.get_d(i)));
+        double logp = log_binomial_pdf(datum.get_a(i), prob_obs_ref[i], datum.get_d(i));
+        logw += logp;
     }
     return logw;
 
     // TODO: use nested SMC idea to generate the copy number variation?
 }
 
-std::pair<PartialCancerPhylogenyState *, double> PartialCancerPhylogenyState::assign_data_point(gsl_rng *random, CancerPhyloParameters &params)
+double PartialCancerPhylogenyState::assign_data_point(gsl_rng *random, CancerPhyloParameters &params)
 {
-    // make a copy of the current state
-    PartialCancerPhylogenyState *new_state = new PartialCancerPhylogenyState(*this);
-
     // 1. sample a data point to be assigned
     // 2. sample U ~ Uniform(0, 1);
-    // 3. find the node corresponding to U = u, generate cnv profile along the way and also, generate new nodes and sticks as needed
+    // 3. find the node corresponding to U = u, generate cnv profile along the way and also, generatne new nodes and sticks as needed
     int idx = discrete_uniform(random, unassigned_data_points->size());
     double u = uniform(random);
     double logw = assign_data_point_helper(random, u, idx, params);
-    return make_pair(new_state, logw);
+    (*unassigned_data_points).erase((*unassigned_data_points).begin() + idx); // delete the idx from the unassigned_data_points
+    return logw;
+}
+
+string PartialCancerPhylogenyState::print()
+{
+    string ret = "";
+    for (unordered_map<SomaticMutation,string>::iterator it = assigned_data_points->begin(); it != assigned_data_points->end(); ++it)
+    {
+        SomaticMutation ssm = it->first;
+        string node = it->second;
+        ret += ssm.id + ": " + node + "\n";
+    }
+    return ret;
 }

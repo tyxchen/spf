@@ -25,6 +25,13 @@ public:
     unsigned int get_a(size_t sample_idx);
     unsigned int get_d(size_t sample_idx);
     size_t num_samples();
+    string print() {
+        string ret = id + " ";
+        for (int i = 0; i < a.size(); i++) {
+            ret += to_string(a[i]) + "/" + to_string(d[i]) + " ";
+        }
+        return ret;
+    }
     bool operator==(const SomaticMutation &other) const
     {
         return (id == other.id);

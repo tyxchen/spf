@@ -18,10 +18,10 @@ class TSSBProblemSpecification : public ProblemSpecification<PartialCancerPhylog
     PartialCancerPhylogenyState *initial_state;
     CancerPhyloParameters &params;
 public:
-    TSSBProblemSpecification(vector<SomaticMutation> data_points, CancerPhyloParameters &params);
+    TSSBProblemSpecification(vector<SomaticMutation> *data_points, CancerPhyloParameters &params);
     unsigned long num_iterations();
     std::pair<PartialCancerPhylogenyState *, double> propose_initial(gsl_rng *random);
-    std::pair<PartialCancerPhylogenyState *, double> propose_next(gsl_rng *random, int t, PartialCancerPhylogenyState curr);
+    std::pair<PartialCancerPhylogenyState *, double> propose_next(gsl_rng *random, int t, PartialCancerPhylogenyState *curr);
     ~TSSBProblemSpecification();
 };
 
