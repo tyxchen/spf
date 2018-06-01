@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <iterator>
 #include <math.h>
 #include <unordered_map>
@@ -181,16 +182,17 @@ void test_tssb(vector<SomaticMutation> *ssms)
     // initialize the problem specification
     long seed = 12;
     gsl_rng* random = generate_random_object(seed);
-    int num_particles = 10;
+    int num_particles = 10000;
     SMCOptions *options = new SMCOptions();
     options->essThreshold = 1;
     options->resampling = SMCOptions::ResamplingScheme::STRATIFIED;
+    options->resample_last_round = true;
     CancerPhyloParameters params;
-    params.gamma = 1.0;
-    params.lambda = 0.9;
-    params.alpha_0 = 2.0;
-    params.birth_rate = 0.05;
-    params.death_rate = 0.001;
+    params.gamma = 1;
+    params.lambda = 1;
+    params.alpha_0 = 1.0;
+    params.birth_rate = 0.0000;
+    params.death_rate = 0.0000;
     params.sequencing_error_prob = 1e-3;
 
     TSSBProblemSpecification *problem_spec = new TSSBProblemSpecification(ssms, params);
@@ -200,7 +202,12 @@ void test_tssb(vector<SomaticMutation> *ssms)
     
     ParticlePopulation<PartialCancerPhylogenyState *> *pop = smc.get_curr_population();
     vector<PartialCancerPhylogenyState *> *states = pop->get_particles();
-    vector<double> *weights = pop->get_log_weights();
+    vector<double> *weights = 0;
+    if (options->resample_last_round) {
+        weights = pop->get_normalized_weights();
+    } else {
+        weights = pop->get_log_weights();
+    }
     for (size_t i = 0; i < states->size(); i++) {
         PartialCancerPhylogenyState *state = (*states)[i];
         cout << weights->at(i) << endl;
@@ -223,6 +230,8 @@ int main()
     gsl_rng *random = generate_random_object(11);
     test_find_node(random, 0.7, params);
      */
+    std::cout << std::fixed;
+    std::cout << std::setprecision(7);
     
     vector<SomaticMutation> *ssms = read_test_ssm();
     test_tssb(ssms);

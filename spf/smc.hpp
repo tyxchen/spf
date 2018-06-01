@@ -124,7 +124,7 @@ ParticlePopulation<P>* SMC<P>::resample(const gsl_rng *random, SMCOptions::Resam
     }
     
     vector<P> *curr_particles = pop->get_particles();
-    
+
     vector<P> *particles = new vector<P>();
     vector<double> *log_weights = new vector<double>();
     double log_w = log(N);

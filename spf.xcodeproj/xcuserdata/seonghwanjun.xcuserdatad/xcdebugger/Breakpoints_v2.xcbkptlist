@@ -74,13 +74,45 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "spf/smc.hpp"
-            timestampString = "549465646.392421"
+            timestampString = "549561808.425669"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "105"
             endingLineNumber = "105"
             landmarkName = "propose(gsl_rng *random, ParticlePopulation&lt;P&gt; *pop, int iter, int num_proposals)"
             landmarkType = "9">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "SMC&lt;int&gt;::propose(gsl_rng*, ParticlePopulation&lt;int&gt;*, int, int)"
+                  moduleName = "spf"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/seonghwanjun/Google%20Drive/Research/smc-research/repos/spf/spf/smc.hpp"
+                  timestampString = "549537803.718164"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "105"
+                  endingLineNumber = "105"
+                  offsetFromSymbolStart = "790">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "SMC&lt;PartialCancerPhylogenyState*&gt;::propose(gsl_rng*, ParticlePopulation&lt;PartialCancerPhylogenyState*&gt;*, int, int)"
+                  moduleName = "spf"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/seonghwanjun/Google%20Drive/Research/smc-research/repos/spf/spf/smc.hpp"
+                  timestampString = "549537803.720469"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "105"
+                  endingLineNumber = "105"
+                  offsetFromSymbolStart = "799">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -122,13 +154,45 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "spf/smc.hpp"
-            timestampString = "549465646.392522"
+            timestampString = "549561808.425786"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "64"
             endingLineNumber = "64"
             landmarkName = "run_smc(gsl_rng *random, unsigned int num_particles)"
             landmarkType = "9">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "SMC&lt;int&gt;::run_smc(gsl_rng*, unsigned int)"
+                  moduleName = "spf"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/seonghwanjun/Google%20Drive/Research/smc-research/repos/spf/spf/smc.hpp"
+                  timestampString = "549538084.746663"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "64"
+                  endingLineNumber = "64"
+                  offsetFromSymbolStart = "698">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "SMC&lt;PartialCancerPhylogenyState*&gt;::run_smc(gsl_rng*, unsigned int)"
+                  moduleName = "spf"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/seonghwanjun/Google%20Drive/Research/smc-research/repos/spf/spf/smc.hpp"
+                  timestampString = "549538084.7492011"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "64"
+                  endingLineNumber = "64"
+                  offsetFromSymbolStart = "698">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -170,28 +234,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "spf/test.hpp"
-            timestampString = "549458808.90117"
+            timestampString = "549561808.4258749"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "98"
             endingLineNumber = "98"
             landmarkName = "test_smc()"
-            landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "spf/smc.hpp"
-            timestampString = "549465646.392622"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "62"
-            endingLineNumber = "62"
-            landmarkName = "run_smc(gsl_rng *random, unsigned int num_particles)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -250,7 +298,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "spf/test.hpp"
-            timestampString = "549458808.901293"
+            timestampString = "549561808.4259599"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "157"
@@ -314,7 +362,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "spf/tssb_problem_spec.cpp"
-            timestampString = "549465646.39276"
+            timestampString = "549561808.426044"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "16"
@@ -330,7 +378,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "spf/tssb_problem_spec.cpp"
-            timestampString = "549465646.392843"
+            timestampString = "549561808.426102"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "24"
@@ -346,11 +394,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "spf/tssb_state.cpp"
-            timestampString = "549465646.39291"
+            timestampString = "549561808.426158"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "21"
-            endingLineNumber = "21"
+            startingLineNumber = "22"
+            endingLineNumber = "22"
             landmarkName = "PartialCancerPhylogenyState::PartialCancerPhylogenyState(vector&lt;SomaticMutation&gt; *data_points)"
             landmarkType = "7">
          </BreakpointContent>
@@ -361,222 +409,14 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "spf/tssb_state.cpp"
-            timestampString = "549465646.393402"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "153"
-            endingLineNumber = "153"
-            landmarkName = "PartialCancerPhylogenyState::compute_log_likelihood(gsl_rng *random, SomaticMutation &amp;datum, string node_str, CancerPhyloParameters &amp;params)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "spf/tssb_state.cpp"
-            timestampString = "549465646.393754"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "168"
-            endingLineNumber = "168"
-            landmarkName = "PartialCancerPhylogenyState::compute_log_likelihood(gsl_rng *random, SomaticMutation &amp;datum, string node_str, CancerPhyloParameters &amp;params)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "spf/tssb_state.cpp"
-            timestampString = "549465646.394075"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "161"
-            endingLineNumber = "161"
-            landmarkName = "PartialCancerPhylogenyState::compute_log_likelihood(gsl_rng *random, SomaticMutation &amp;datum, string node_str, CancerPhyloParameters &amp;params)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "spf/tssb_state.cpp"
-            timestampString = "549465646.394389"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "53"
-            endingLineNumber = "53"
-            landmarkName = "PartialCancerPhylogenyState::sample_frequncy(gsl_rng *random, size_t num_samples, string curr_node_str, string parent_node_str)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "spf/tssb_state.cpp"
-            timestampString = "549465646.394713"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "73"
-            endingLineNumber = "73"
-            landmarkName = "PartialCancerPhylogenyState::assign_data_point_helper(gsl_rng *random, double u, int idx, CancerPhyloParameters &amp;params)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "spf/tssb_state.cpp"
-            timestampString = "549465646.395041"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "156"
-            endingLineNumber = "156"
-            landmarkName = "PartialCancerPhylogenyState::compute_log_likelihood(gsl_rng *random, SomaticMutation &amp;datum, string node_str, CancerPhyloParameters &amp;params)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
             filePath = "spf/sampling_utils.cpp"
-            timestampString = "549465646.39536"
+            timestampString = "549471411.063244"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "48"
             endingLineNumber = "48"
             landmarkName = "sample_birth_death_process(gsl_rng *random, unsigned int num_individuals, double t, double birth_rate, double death_rate)"
             landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "spf/tssb_state.cpp"
-            timestampString = "549465646.395409"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "141"
-            endingLineNumber = "141"
-            landmarkName = "PartialCancerPhylogenyState::compute_log_likelihood(gsl_rng *random, SomaticMutation &amp;datum, string node_str, CancerPhyloParameters &amp;params)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "spf/smc.hpp"
-            timestampString = "549465646.395704"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "58"
-            endingLineNumber = "58"
-            landmarkName = "run_smc(gsl_rng *random, unsigned int num_particles)"
-            landmarkType = "9">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "SMC&lt;int&gt;::run_smc(gsl_rng*, unsigned int)"
-                  moduleName = "spf"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/seonghwanjun/Google%20Drive/Research/smc-research/repos/spf/spf/smc.hpp"
-                  timestampString = "549461671.813519"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "58"
-                  endingLineNumber = "58"
-                  offsetFromSymbolStart = "90">
-               </Location>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "SMC&lt;PartialCancerPhylogenyState*&gt;::run_smc(gsl_rng*, unsigned int)"
-                  moduleName = "spf"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/seonghwanjun/Google%20Drive/Research/smc-research/repos/spf/spf/smc.hpp"
-                  timestampString = "549461671.815538"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "58"
-                  endingLineNumber = "58"
-                  offsetFromSymbolStart = "90">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "spf/tssb_state.cpp"
-            timestampString = "549465646.395753"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "35"
-            endingLineNumber = "35"
-            landmarkName = "PartialCancerPhylogenyState::PartialCancerPhylogenyState(PartialCancerPhylogenyState &amp;src)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "spf/tssb_state.cpp"
-            timestampString = "549465646.396052"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "193"
-            endingLineNumber = "193"
-            landmarkName = "PartialCancerPhylogenyState::assign_data_point(gsl_rng *random, CancerPhyloParameters &amp;params)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "spf/tssb_state.cpp"
-            timestampString = "549465646.396331"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "178"
-            endingLineNumber = "178"
-            landmarkName = "PartialCancerPhylogenyState::compute_log_likelihood(gsl_rng *random, SomaticMutation &amp;datum, string node_str, CancerPhyloParameters &amp;params)"
-            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

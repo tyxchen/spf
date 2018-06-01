@@ -52,6 +52,7 @@
 		3DC9928120759FF800286755 /* smc_options.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = smc_options.hpp; sourceTree = "<group>"; };
 		3DC992822075AD4C00286755 /* particle_population.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = particle_population.hpp; sourceTree = "<group>"; };
 		3DD51B34207926A900966F46 /* resampling.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = resampling.hpp; sourceTree = "<group>"; };
+		3DD782A020C1A28B009C343B /* test_ssm_data.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test_ssm_data.txt; sourceTree = "<group>"; };
 		3DDFEA342071668D0041358C /* spf */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = spf; sourceTree = BUILT_PRODUCTS_DIR; };
 		3DDFEA372071668D0041358C /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		3DDFEA3F207166A50041358C /* smc.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = smc.hpp; sourceTree = "<group>"; };
@@ -78,6 +79,7 @@
 		3D54C67220BD8F8600B83BF9 /* input */ = {
 			isa = PBXGroup;
 			children = (
+				3DD782A020C1A28B009C343B /* test_ssm_data.txt */,
 				3D54C67320BD8F9B00B83BF9 /* ssm_data.txt */,
 			);
 			path = input;

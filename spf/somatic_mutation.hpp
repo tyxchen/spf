@@ -27,9 +27,11 @@ public:
     size_t num_samples();
     string print() {
         string ret = id + " ";
+        /*
         for (int i = 0; i < a.size(); i++) {
             ret += to_string(a[i]) + "/" + to_string(d[i]) + " ";
         }
+         */
         return ret;
     }
     bool operator==(const SomaticMutation &other) const
