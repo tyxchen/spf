@@ -82,9 +82,10 @@ template<class P>
 ParticlePopulation<P>* SMC<P>::propose(gsl_rng *random, ParticlePopulation<P> *pop, int iter, int num_proposals)
 {
     vector<P> *curr_particles = 0;
+    vector<double> *curr_log_weights = 0;
     if (pop != 0) {
-         curr_particles = pop->get_particles();
-        //vector<double> *curr_log_weights = pop->get_log_weights();
+        curr_particles = pop->get_particles();
+        curr_log_weights = pop->get_log_weights();
     }
 
     vector<P> *new_particles = new vector<P>(num_proposals);
@@ -99,8 +100,10 @@ ParticlePopulation<P>* SMC<P>::propose(gsl_rng *random, ParticlePopulation<P> *p
             ret = proposal->propose_next(random, iter, (*curr_particles)[n]);
         }
         (*new_particles)[n] = ret.first;
-        (*new_log_weights)[n] = ret.second;
-        //(*new_log_weights)[n] = (*curr_log_weights)[n] + ret.second;
+        if (pop != 0)
+            (*new_log_weights)[n] = (*curr_log_weights)[n] + ret.second;
+        else
+            (*new_log_weights)[n] = ret.second;
     }
     ParticlePopulation<P> *new_pop = new ParticlePopulation<P>(new_particles, new_log_weights);
     return new_pop;

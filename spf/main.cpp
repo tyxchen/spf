@@ -167,7 +167,7 @@ vector<SomaticMutation> *read_test_ssm()
                 d.push_back(stoi(fields2[i]));
             }
             SomaticMutation ssm(fields1[0], a, d);
-            cout << ssm.print() << endl;
+            //cout << ssm.print() << endl;
             ret->push_back(ssm);
         }
         file.close();
@@ -180,19 +180,19 @@ vector<SomaticMutation> *read_test_ssm()
 void test_tssb(vector<SomaticMutation> *ssms)
 {
     // initialize the problem specification
-    long seed = 12;
+    long seed = 32;
     gsl_rng* random = generate_random_object(seed);
-    int num_particles = 10000;
+    int num_particles = 20000;
     SMCOptions *options = new SMCOptions();
     options->essThreshold = 1;
     options->resampling = SMCOptions::ResamplingScheme::STRATIFIED;
     options->resample_last_round = true;
     CancerPhyloParameters params;
-    params.gamma = 1;
+    params.gamma = 0.7;
     params.lambda = 1;
-    params.alpha_0 = 1.0;
-    params.birth_rate = 0.0000;
-    params.death_rate = 0.0000;
+    params.alpha_0 = 1;
+    params.birth_rate = 0.01;
+    params.death_rate = 0.01;
     params.sequencing_error_prob = 1e-3;
 
     TSSBProblemSpecification *problem_spec = new TSSBProblemSpecification(ssms, params);
@@ -208,10 +208,16 @@ void test_tssb(vector<SomaticMutation> *ssms)
     } else {
         weights = pop->get_log_weights();
     }
+
+    unordered_map<double, PartialCancerPhylogenyState*> states_map;
     for (size_t i = 0; i < states->size(); i++) {
         PartialCancerPhylogenyState *state = (*states)[i];
-        cout << weights->at(i) << endl;
-        cout << state->print() << endl;
+        double loglik = state->get_log_likelihood();
+        if (states_map.count(loglik) == 0) {
+            states_map[loglik] = state;
+            cout << state->get_log_likelihood() << endl;
+            cout << state->print() << endl;
+        }
     }
 }
 
@@ -230,6 +236,7 @@ int main()
     gsl_rng *random = generate_random_object(11);
     test_find_node(random, 0.7, params);
      */
+    
     std::cout << std::fixed;
     std::cout << std::setprecision(7);
     
