@@ -59,6 +59,11 @@ int sample_birth_death_process(gsl_rng *random, unsigned int num_individuals, do
     return num_births - num_deaths;
 }
 
+double weibull(gsl_rng *random, double lambda, double kappa)
+{
+    return gsl_ran_weibull(random, lambda, kappa);
+}
+
 double beta(const gsl_rng *random, double alpha, double beta)
 {
     return gsl_ran_beta(random, alpha, beta);

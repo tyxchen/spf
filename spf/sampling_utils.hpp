@@ -17,6 +17,7 @@ using namespace std;
 gsl_rng* generate_random_object(long seed);
 
 int sample_birth_death_process(gsl_rng *random, unsigned int num_individuals, double t, double birth_rate, double death_rate);
+double weibull(gsl_rng *random, double lambda, double kappa);
 
 double beta(const gsl_rng *random, double alpha, double beta);
 

@@ -25,6 +25,9 @@ class PartialCancerPhylogenyState
     vector<SomaticMutation> *unassigned_data_points = 0;
     unordered_map<string, Node *> *str2node = 0;
     unordered_map<SomaticMutation, string, hash<SomaticMutation>> *datum2node = 0;
+    unordered_map<SomaticMutation, double, hash<SomaticMutation>> *datum2cnr = 0;
+    unordered_map<SomaticMutation, double, hash<SomaticMutation>> *datum2cnv = 0;
+    
     vector<double> *eta = 0;
     double loglik = 0;
     size_t num_samples = 0;
@@ -32,8 +35,8 @@ class PartialCancerPhylogenyState
     string form_node_string(string curr_node_str, size_t branch);
     string get_parent_string(string curr_node_str);
     void assign_data_point(gsl_rng *random, double u, SomaticMutation &datum, CancerPhyloParameters &params);
-    void sample_frequency_helper(gsl_rng *random, SomaticMutation &datum, Node *curr_node);
-    double compute_log_likelihood(gsl_rng *random, CancerPhyloParameters &params);
+    void sample_frequency_helper(gsl_rng *random, vector<Node*> *path, Node *curr_node);
+    double compute_log_likelihood(gsl_rng *random, SomaticMutation &datum, CancerPhyloParameters &params);
     double compute_log_likelihood_helper(gsl_rng *random, SomaticMutation &datum, CancerPhyloParameters &params);
     vector<Node *> *get_children_nodes(Node *curr_node);
 public:

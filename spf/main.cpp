@@ -182,7 +182,7 @@ void test_tssb(vector<SomaticMutation> *ssms)
     // initialize the problem specification
     long seed = 32;
     gsl_rng* random = generate_random_object(seed);
-    int num_particles = 20000;
+    int num_particles = 10000;
     SMCOptions *options = new SMCOptions();
     options->essThreshold = 1;
     options->resampling = SMCOptions::ResamplingScheme::STRATIFIED;
@@ -190,9 +190,11 @@ void test_tssb(vector<SomaticMutation> *ssms)
     CancerPhyloParameters params;
     params.gamma = 0.7;
     params.lambda = 1;
-    params.alpha_0 = 1;
+    params.alpha_0 = 5;
     params.birth_rate = 0.01;
     params.death_rate = 0.01;
+    params.weibull_scale = 1.0;
+    params.weibull_shape = 5.0;
     params.sequencing_error_prob = 1e-3;
 
     TSSBProblemSpecification *problem_spec = new TSSBProblemSpecification(ssms, params);

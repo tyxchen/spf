@@ -21,6 +21,8 @@ public:
     double alpha_0;
     double birth_rate;
     double death_rate;
+    double weibull_scale;
+    double weibull_shape;
     double sequencing_error_prob;
     double alpha(string node_str);
 };
