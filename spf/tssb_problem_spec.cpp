@@ -29,7 +29,8 @@ std::pair<PartialCancerPhylogenyState*, double> TSSBProblemSpecification::propos
     PartialCancerPhylogenyState *new_state = new PartialCancerPhylogenyState(*curr);
     double ret = new_state->sample_next_state(random, params);
     //cout << ret << ", " << new_state->print() << endl;
-    return make_pair(new_state, ret - curr->get_log_likelihood());
+    //return make_pair(new_state, ret - curr->get_log_likelihood());
+    return make_pair(new_state, ret);
 }
 
 TSSBProblemSpecification::~TSSBProblemSpecification() { }

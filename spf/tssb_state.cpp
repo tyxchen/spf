@@ -122,12 +122,11 @@ void PartialCancerPhylogenyState::assign_data_point(gsl_rng *random, double u, S
 void PartialCancerPhylogenyState::sample_frequency_helper(gsl_rng *random, vector<Node*> *path, Node *curr_node)
 {
     double u = 0.0;
-    for (vector<Node*>::reverse_iterator it = path->rbegin(); it != path->rend(); ++it)
-    {
-        for (size_t i = 0; i < num_samples; i++) {
-            u = uniform(random, 0.0, eta->at(i));
-            (*eta)[i] = eta->at(i) - u;
-
+    for (size_t i = 0; i < num_samples; i++) {
+        u = uniform(random, 0.0, eta->at(i));
+        (*eta)[i] = eta->at(i) - u;
+        for (vector<Node*>::reverse_iterator it = path->rbegin(); it != path->rend(); ++it)
+        {
             Node *node = *it;
             if (curr_node == node) {
                 node->add_frequency(u);
@@ -176,8 +175,8 @@ double PartialCancerPhylogenyState::compute_log_likelihood_helper(gsl_rng *rando
         if (cnv > 0) {
             prob_obs_var = prevalence * cnv / (cnr + cnv);
         }
-        prob_obs_ref = (1 - prevalence) * (1-params.sequencing_error_prob) + prob_obs_var * params.sequencing_error_prob;
-        prob_obs_var = (1 - prevalence) * params.sequencing_error_prob + prob_obs_var * (1 - params.sequencing_error_prob);
+        prob_obs_ref = (1 - prevalence + prob_obs_ref) * (1-params.sequencing_error_prob) + prob_obs_var * params.sequencing_error_prob;
+        prob_obs_var = (1 - prevalence + prob_obs_ref) * params.sequencing_error_prob + prob_obs_var * (1 - params.sequencing_error_prob);
         double logp = log_binomial_pdf(datum.get_a(idx), prob_obs_ref, datum.get_d(idx));
         logp += log_binomial_pdf(datum.get_d(idx) - datum.get_a(idx), prob_obs_var, datum.get_d(idx));
         logw += logp;

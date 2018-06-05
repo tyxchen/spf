@@ -142,7 +142,7 @@ vector<SomaticMutation> *read_test_ssm()
 
     // use the sample data from phylowgs
     ifstream file;
-    file.open("/Users/seonghwanjun/Google Drive/Research/smc-research/repos/spf/input/test_ssm_data.txt");
+    file.open("/Users/seonghwanjun/Google Drive/Research/smc-research/repos/spf/input/small_ssm_data.txt");
     string line;
     vector<string> fields1;
     vector<string> fields2;
@@ -188,13 +188,13 @@ void test_tssb(vector<SomaticMutation> *ssms)
     options->resampling = SMCOptions::ResamplingScheme::STRATIFIED;
     options->resample_last_round = true;
     CancerPhyloParameters params;
-    params.gamma = 0.7;
+    params.gamma = 1;
     params.lambda = 1;
-    params.alpha_0 = 5;
+    params.alpha_0 = 1;
     params.birth_rate = 0.01;
     params.death_rate = 0.01;
     params.weibull_scale = 1.0;
-    params.weibull_shape = 5.0;
+    params.weibull_shape = 3.0;
     params.sequencing_error_prob = 1e-3;
 
     TSSBProblemSpecification *problem_spec = new TSSBProblemSpecification(ssms, params);
