@@ -142,7 +142,7 @@ vector<SomaticMutation> *read_test_ssm()
 
     // use the sample data from phylowgs
     ifstream file;
-    file.open("/Users/seonghwanjun/Google Drive/Research/smc-research/repos/spf/input/small_ssm_data.txt");
+    file.open("/Users/seonghwanjun/Google Drive/Research/smc-research/repos/spf/input/test_ssm_data.txt");
     string line;
     vector<string> fields1;
     vector<string> fields2;
@@ -182,7 +182,7 @@ void test_tssb(vector<SomaticMutation> *ssms)
     // initialize the problem specification
     long seed = 32;
     gsl_rng* random = generate_random_object(seed);
-    int num_particles = 10000;
+    int num_particles = 100000;
     SMCOptions *options = new SMCOptions();
     options->essThreshold = 1;
     options->resampling = SMCOptions::ResamplingScheme::STRATIFIED;
@@ -194,7 +194,7 @@ void test_tssb(vector<SomaticMutation> *ssms)
     params.birth_rate = 0.01;
     params.death_rate = 0.01;
     params.weibull_scale = 1.0;
-    params.weibull_shape = 3.0;
+    params.weibull_shape = 7.0;
     params.sequencing_error_prob = 1e-3;
 
     TSSBProblemSpecification *problem_spec = new TSSBProblemSpecification(ssms, params);

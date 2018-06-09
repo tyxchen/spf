@@ -24,6 +24,7 @@ public:
     double weibull_scale;
     double weibull_shape;
     double sequencing_error_prob;
+    double prevalence_var = 0.05;
     double alpha(string node_str);
 };
 

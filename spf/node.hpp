@@ -23,7 +23,7 @@ using namespace std;
 class Node
 {
     vector<SomaticMutation> *ssms = 0;
-    vector<double> *cluster_freq = 0;
+    //vector<double> *cluster_freq = 0;
     vector<double> *prevalence = 0;
     vector<double> *psi_sticks = 0;
     double nu = 0.0;
@@ -40,25 +40,21 @@ public:
     void set_nu_stick(double nu);
     double get_nu_stick();
     
+    /*
     void add_frequency(double freq);
     void set_frequency(size_t idx, double freq);
     double get_frequency(size_t idx);
     bool is_freq_sampled();
+     */
     
     double get_prevalence(size_t idx);
     void add_prevalence(double u);
     void update_prevalence(size_t idx, double u);
+    bool is_prevalence_sampled();
     
     vector<double> *get_psi_sticks();
     
     unsigned int find_branch(gsl_rng *random, double u, CancerPhyloParameters &params);
-    
-    /*
-    void set_cn_profile(SomaticMutation &datum, unsigned int cn_ref, unsigned int cn_var);
-    unsigned int get_cnr(SomaticMutation &datum);
-    unsigned int get_cnv(SomaticMutation &datum);
-    bool cnprofile_exists(SomaticMutation &datum);
-     */
     
     void add_ssm(SomaticMutation &datum);
     vector<SomaticMutation> *get_ssms();

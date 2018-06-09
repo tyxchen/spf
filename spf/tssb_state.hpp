@@ -35,7 +35,7 @@ class PartialCancerPhylogenyState
     string form_node_string(string curr_node_str, size_t branch);
     string get_parent_string(string curr_node_str);
     void assign_data_point(gsl_rng *random, double u, SomaticMutation &datum, CancerPhyloParameters &params);
-    void sample_frequency_helper(gsl_rng *random, vector<Node*> *path, Node *curr_node);
+    void sample_frequency_helper(gsl_rng *random, vector<Node*> *path, Node *curr_node, SomaticMutation &datum);
     double compute_log_likelihood(gsl_rng *random, SomaticMutation &datum, CancerPhyloParameters &params);
     double compute_log_likelihood_helper(gsl_rng *random, SomaticMutation &datum, CancerPhyloParameters &params);
     vector<Node *> *get_children_nodes(Node *curr_node);

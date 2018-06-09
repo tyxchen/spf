@@ -15,12 +15,9 @@ Node::Node(string name, size_t num_samples)
 {
     this->name = name;
     this->ssms = new vector<SomaticMutation>();
-    this->cluster_freq = new vector<double>();
+    //this->cluster_freq = new vector<double>();
     this->psi_sticks = new vector<double>();
-    this->prevalence = new vector<double>(num_samples);
-    for (size_t i = 0; i < num_samples; i++) {
-        (*prevalence)[i] = 0.0;
-    }
+    this->prevalence = new vector<double>();
 }
 
 Node::Node(const Node &src)
@@ -28,11 +25,7 @@ Node::Node(const Node &src)
     this->nu = src.nu;
     this->name = src.name;
     this->ssms = new vector<SomaticMutation>(*src.ssms);
-    /*
-    this->cn_ref = new unordered_map<SomaticMutation, unsigned int>(*src.cn_ref);
-    this->cn_var = new unordered_map<SomaticMutation, unsigned int>(*src.cn_var);
-     */
-    this->cluster_freq = new vector<double>(*src.cluster_freq);
+    //this->cluster_freq = new vector<double>(*src.cluster_freq);
     this->prevalence = new vector<double>(*src.prevalence);
     this->psi_sticks = new vector<double>(*src.psi_sticks);
 }
@@ -40,9 +33,7 @@ Node::Node(const Node &src)
 Node::~Node()
 {
     delete ssms;
-    //delete cn_ref;
-    //delete cn_var;
-    delete cluster_freq;
+    //delete cluster_freq;
     delete prevalence;
     delete psi_sticks;
 }
@@ -57,6 +48,7 @@ double Node::get_nu_stick()
     return this->nu;
 }
 
+/*
 void Node::add_frequency(double freq)
 {
     cluster_freq->push_back(freq);
@@ -72,6 +64,12 @@ double Node::get_frequency(size_t idx)
 {
     return cluster_freq->at(idx);
 }
+
+bool Node::is_freq_sampled()
+{
+    return cluster_freq->size() > 0;
+}
+*/
 
 unsigned int Node::find_branch(gsl_rng *random, double u, CancerPhyloParameters &params)
 {
@@ -102,37 +100,6 @@ vector<double> *Node::get_psi_sticks()
     return psi_sticks;
 }
 
-/*
-void Node::set_cn_profile(SomaticMutation &datum, unsigned int cnr, unsigned int cnv)
-{
-    (*cn_ref)[datum] = cnr;
-    (*cn_var)[datum] = cnv;
-}
-
-unsigned int Node::get_cnr(SomaticMutation &datum)
-{
-    if (cn_ref->count(datum)) {
-        return (*cn_ref)[datum];
-    } else {
-        return -1;
-    }
-}
-
-unsigned int Node::get_cnv(SomaticMutation &datum)
-{
-    if (cn_var->count(datum)) {
-        return (*cn_var)[datum];
-    } else {
-        return -1;
-    }
-}
-
-bool Node::cnprofile_exists(SomaticMutation &datum)
-{
-    return cn_ref == 0 ? false : (get_cnr(datum) == -1 ? false : true);
-}
- */
-
 void Node::add_ssm(SomaticMutation &datum)
 {
     ssms->push_back(datum);
@@ -141,11 +108,6 @@ void Node::add_ssm(SomaticMutation &datum)
 vector<SomaticMutation> *Node::get_ssms()
 {
     return ssms;
-}
-
-bool Node::is_freq_sampled()
-{
-    return cluster_freq->size() > 0;
 }
 
 double Node::get_prevalence(size_t idx)
@@ -163,6 +125,11 @@ void Node::update_prevalence(size_t idx, double u)
     (*prevalence)[idx] += u;
 }
 
+bool Node::is_prevalence_sampled()
+{
+    return prevalence->size() > 0;
+}
+
 string Node::print()
 {
     // print the node name, SSMs, and copy number variation
@@ -175,7 +142,7 @@ string Node::print()
     SomaticMutation ssm = this->ssms->at(0);
     size_t len = ssm.num_samples();
     for (size_t i = 0; i < len; i++)
-        ret += ", " + to_string(this->get_prevalence(i)) + ", " + to_string(this->get_frequency(i));
+        ret += ", " + to_string(this->get_prevalence(i));
     ret += ")";
     return ret;
 }

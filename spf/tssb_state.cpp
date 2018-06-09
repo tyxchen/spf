@@ -113,25 +113,26 @@ void PartialCancerPhylogenyState::assign_data_point(gsl_rng *random, double u, S
     (*datum2node)[datum] = node_str;
     // update SSMs assigned to the node
     node->add_ssm(datum);
-    if (!node->is_freq_sampled()) {
-        // sample the frequencies
-        sample_frequency_helper(random, path, node);
+    if (!node->is_prevalence_sampled()) {
+        sample_frequency_helper(random, path, node, datum);
     }
 }
 
-void PartialCancerPhylogenyState::sample_frequency_helper(gsl_rng *random, vector<Node*> *path, Node *curr_node)
+void PartialCancerPhylogenyState::sample_frequency_helper(gsl_rng *random, vector<Node*> *path, Node *curr_node, SomaticMutation &datum)
 {
-    double u = 0.0;
-    for (size_t i = 0; i < num_samples; i++) {
-        u = uniform(random, 0.0, eta->at(i));
-        (*eta)[i] = eta->at(i) - u;
-        for (vector<Node*>::reverse_iterator it = path->rbegin(); it != path->rend(); ++it)
-        {
-            Node *node = *it;
-            if (curr_node == node) {
-                node->add_frequency(u);
+    vector<double> phi_parent(num_samples, 1.0);
+    double phi = 0.0;
+    for (vector<Node*>::iterator it = path->begin(); it != path->end(); ++it)
+    {
+        Node *node = *it;
+        if (!node->is_prevalence_sampled()) {
+            for (size_t i = 0; i < num_samples; i++) {
+                phi = uniform(random, 0.0, phi_parent[i]);
+                node->add_prevalence(phi);
             }
-            node->update_prevalence(i, u);
+        }
+        for (size_t i = 0; i < num_samples; i++) {
+            phi_parent[i] = node->get_prevalence(i);
         }
     }
 }
@@ -139,6 +140,7 @@ void PartialCancerPhylogenyState::sample_frequency_helper(gsl_rng *random, vecto
 double PartialCancerPhylogenyState::compute_log_likelihood(gsl_rng *random, SomaticMutation &datum, CancerPhyloParameters &params)
 {
     return compute_log_likelihood_helper(random, datum, params);
+
     // enumerate over SomaticMutation in datum2node
     /*
     double logw = 0.0;
