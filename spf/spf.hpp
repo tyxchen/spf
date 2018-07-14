@@ -23,38 +23,38 @@
 
 using namespace std;
 
-template <class P> class SPF
+template <class S, class P> class SPF
 {
     SMCOptions *options;
-    ProblemSpecification<P> *proposal;
+    ProblemSpecification<S, P> *proposal;
     double log_marginal_likelihood = 0;
-    CompactParticlePopulation<P> propose_compact_population(PermutationStream &stream, ParticlePopulation<P> *prev_pop, int iter);
-    ParticlePopulation<P> *contraction(PermutationStream &stream, ParticlePopulation<P> *prev_pop, CompactParticlePopulation<P> &compact_pop, int N, int iter);
-    vector<ParticlePopulation<P> *> *populations = 0;
+    CompactParticlePopulation<S> propose_compact_population(PermutationStream &stream, ParticlePopulation<S> *prev_pop, int iter, P &params);
+    ParticlePopulation<S> *contraction(PermutationStream &stream, ParticlePopulation<S> *prev_pop, CompactParticlePopulation<S> &compact_pop, int N, int iter, P &params);
+    vector<ParticlePopulation<S> *> *populations = 0;
 
 public:
-    SPF(ProblemSpecification<P> *proposal, SMCOptions *options);
-    void run_spf();
+    SPF(ProblemSpecification<S, P> *proposal, SMCOptions *options);
+    void run_spf(P &params);
     
     double get_log_marginal_likelihood();
-    inline ParticlePopulation<P>* get_curr_population() { return populations->back(); }
+    inline ParticlePopulation<S>* get_curr_population() { return populations->back(); }
     ~SPF();
 };
 
-template <class P>
-SPF<P>::SPF(ProblemSpecification<P> *proposal, SMCOptions *options)
+template <class S, class P>
+SPF<S,P>::SPF(ProblemSpecification<S, P> *proposal, SMCOptions *options)
 {
     this->proposal = proposal;
     this->options = options;
-    this->populations = new vector<ParticlePopulation<P> *>();
+    this->populations = new vector<ParticlePopulation<S> *>();
 }
 
-template <class P>
-void SPF<P>::run_spf()
+template <class S, class P>
+void SPF<S,P>::run_spf(P &params)
 {
     unsigned long R = proposal->num_iterations();
 
-    ParticlePopulation<P> *curr_pop = 0;
+    ParticlePopulation<S> *curr_pop = 0;
 
     log_marginal_likelihood = 0.0;
     long seed;
@@ -65,39 +65,40 @@ void SPF<P>::run_spf()
         stream->set_seed(seed);
 
         // expansion
-        CompactParticlePopulation<P> compact_pop = propose_compact_population(*stream, curr_pop, r);
+        CompactParticlePopulation<S> compact_pop = propose_compact_population(*stream, curr_pop, r, params);
         log_marginal_likelihood += compact_pop.logZ();
         cout << "ESS: " << compact_pop.ess() << ", sum_of_sq_weights: " << compact_pop.get_log_sum_of_square_weights() << ", nParticles: " << compact_pop.get_num_particles() << ", logZ: " << log_marginal_likelihood << endl;
 
         // contraction
         stream->reset();
-        curr_pop = contraction(*stream, curr_pop, compact_pop, options->num_particles, r);
+        curr_pop = contraction(*stream, curr_pop, compact_pop, options->num_particles, r, params);
         populations->push_back(curr_pop);
     }
     delete stream;
 }
 
-template<class P>
-CompactParticlePopulation<P> SPF<P>::propose_compact_population(PermutationStream &stream, ParticlePopulation<P> *pop, int iter)
+template <class S, class P>
+CompactParticlePopulation<S> SPF<S,P>::propose_compact_population(PermutationStream &stream, ParticlePopulation<S> *pop, int iter, P &params)
 {
     unsigned int idx = 0;
-    CompactParticlePopulation<P> compact_pop;
+    CompactParticlePopulation<S> compact_pop;
     pair<int, double> ret;
 
-    vector<P> *curr_particles = 0;
+    vector<S> *curr_particles = 0;
     if (pop != 0) {
         curr_particles = pop->get_particles();
     }
     gsl_rng *random = stream.get_random();
+    int count = 0;
     while (compact_pop.get_num_particles() < options->num_particles ||
             (compact_pop.get_num_particles() < options->max_virtual_particles &&
              compact_pop.ess()/options->num_particles < options->essThreshold))
     {
         idx = stream.pop();
         if (pop == 0) {
-            ret = proposal->propose_initial(random);
+            ret = proposal->propose_initial(random, params);
         } else {
-            ret = proposal->propose_next(random, iter, (*curr_particles)[idx]);
+            ret = proposal->propose_next(random, iter, (*curr_particles)[idx], params);
         }
         compact_pop.add_weight(ret.second);
     }
@@ -105,8 +106,8 @@ CompactParticlePopulation<P> SPF<P>::propose_compact_population(PermutationStrea
     return compact_pop;
 }
 
-template <class P>
-ParticlePopulation<P> *SPF<P>::contraction(PermutationStream &stream, ParticlePopulation<P> *pop, CompactParticlePopulation<P> &compact_pop, int N, int iter)
+template <class S, class P>
+ParticlePopulation<S> *SPF<S,P>::contraction(PermutationStream &stream, ParticlePopulation<S> *pop, CompactParticlePopulation<S> &compact_pop, int N, int iter, P &params)
 {
     // generate N uniform numbers and sort it
     // propagate particles one at a time, using the log norm to determine, which particle is to be stored
@@ -117,10 +118,10 @@ ParticlePopulation<P> *SPF<P>::contraction(PermutationStream &stream, ParticlePo
     pair<int, double> ret;
     double log_norm = compact_pop.get_log_sum_weights();
     
-    vector<P> *new_particles = new vector<P>(N);
+    vector<S> *new_particles = new vector<S>(N);
     vector<double> *new_log_weights = new vector<double>(N);
 
-    vector<P> *curr_particles = 0;
+    vector<S> *curr_particles = 0;
     if (pop != 0) {
         curr_particles = pop->get_particles();
     }
@@ -139,16 +140,16 @@ ParticlePopulation<P> *SPF<P>::contraction(PermutationStream &stream, ParticlePo
     }
 
     gsl_rng *random = stream.get_random();
-    CompactParticlePopulation<P> sanity_check;
+    CompactParticlePopulation<S> sanity_check;
     double log_weight = log(1./N);
     for (int n = 0; n < N; n++)
     {
         while (normalized_partial_sum < sorted_uniform[n]) {
             idx = stream.pop();
             if (pop == 0) {
-                ret = proposal->propose_initial(random);
+                ret = proposal->propose_initial(random, params);
             } else {
-                ret = proposal->propose_next(random, iter, (*curr_particles)[idx]);
+                ret = proposal->propose_next(random, iter, (*curr_particles)[idx], params);
             }
             normalized_partial_sum += exp(ret.second - log_norm);
             sanity_check.add_weight(ret.second);
@@ -157,32 +158,33 @@ ParticlePopulation<P> *SPF<P>::contraction(PermutationStream &stream, ParticlePo
         (*new_log_weights)[n] = log_weight;
     }
     
-    for (int j = 0; j < (compact_pop.get_num_particles() - sanity_check.get_num_particles()); j++) {
+    int num_iter_left = compact_pop.get_num_particles() - sanity_check.get_num_particles();
+    for (int j = 0; j < num_iter_left; j++) {
         idx = stream.pop();
         if (pop == 0) {
-            ret = proposal->propose_initial(random);
+            ret = proposal->propose_initial(random, params);
         } else {
-            ret = proposal->propose_next(random, iter, (*curr_particles)[idx]);
+            ret = proposal->propose_next(random, iter, (*curr_particles)[idx], params);
         }
         sanity_check.add_weight(ret.second);
     }
-    
-    cout << log_norm << " vs " << sanity_check.get_log_sum_weights() << endl;
-    
-    ParticlePopulation<P> *new_pop = new ParticlePopulation<P>(new_particles, new_log_weights);
+
+    cout << "|" << log_norm << " - " << sanity_check.get_log_sum_weights() << "| = " << abs(log_norm - sanity_check.get_log_sum_weights()) << endl;
+
+    ParticlePopulation<S> *new_pop = new ParticlePopulation<S>(new_particles, new_log_weights);
     delete [] sorted_uniform;
     return new_pop;
 
 }
 
-template <class P>
-double SPF<P>::get_log_marginal_likelihood()
+template <class S, class P>
+double SPF<S,P>::get_log_marginal_likelihood()
 {
     return log_marginal_likelihood;
 }
 
-template <class P>
-SPF<P>::~SPF()
+template <class S, class P>
+SPF<S,P>::~SPF()
 {
 }
 

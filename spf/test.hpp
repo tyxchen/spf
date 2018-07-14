@@ -13,6 +13,7 @@
 #include <gsl/gsl_randist.h>
 
 #include "discrete_hmm_model.hpp"
+#include "discrete_hmm_params.hpp"
 #include "numerical_utils.hpp"
 #include "sampling_utils.hpp"
 #include "smc.hpp"
@@ -95,12 +96,15 @@ void test_smc()
         cout << x_t << "->" << y_t << endl;
     }
 
-    int num_particles = 10000000;
     SMCOptions *options = new SMCOptions();
     options->essThreshold = 1;
     options->resampling = SMCOptions::ResamplingScheme::STRATIFIED;
-    SMC<int> smc(new DiscreteHMM(num_latent_states, mu, P, Q, obs), options);
-    smc.run_smc(random, num_particles);
+    options->num_particles = 10000;
+    options->resampling_random = generate_random_object(1);
+    options->main_random = generate_random_object(1);
+    DiscreteHMMParams params(mu, P, Q);
+    SMC<int, DiscreteHMMParams> smc(new DiscreteHMM(num_latent_states, obs), options);
+    smc.run_smc(params);
     ParticlePopulation<int> *pop = smc.get_curr_population();
     vector<int> *particles = pop->get_particles();
     //vector<double> *log_weights = pop->get_log_weights();
@@ -113,10 +117,10 @@ void test_smc()
     cout << "True log p(y_{1:T}) = " << true_log_marginal_lik << endl;
     cout << "Diff: " << abs(true_log_marginal_lik - log_marginal_lik) << endl;
     
-    double probs_T[num_latent_states];
-    for (int n = 0; n < num_particles; n++)
+    vector<double> probs_T(num_latent_states);
+    for (int n = 0; n < options->num_particles; n++)
     {
-            probs_T[(*particles)[n]] += (*normalized_weights)[n];
+        probs_T[(*particles)[n]] += (*normalized_weights)[n];
     }
     
     double truth_T[]{0.41014761778484926, 0.16648987890038008, 0.4233625033147706};
@@ -184,16 +188,17 @@ void test_spf()
 
     SMCOptions *options = new SMCOptions();
     options->num_particles = 10000;
-    options->max_virtual_particles = 10000000;
+    options->max_virtual_particles = 20000;
     options->essThreshold = DOUBLE_INF;
     options->resampling_random = generate_random_object(seed);
     options->main_random = generate_random_object(1);
     options->resampling = SMCOptions::ResamplingScheme::STRATIFIED;
-    SPF<int> spf(new DiscreteHMM(num_latent_states, mu, P, Q, obs), options);
-    spf.run_spf();
+    DiscreteHMMParams params(mu, P, Q);
+    SPF<int, DiscreteHMMParams> spf(new DiscreteHMM(num_latent_states, obs), options);
+    spf.run_spf(params);
     ParticlePopulation<int> *pop = spf.get_curr_population();
     vector<int> *particles = pop->get_particles();
-    
+
     // get the estimate of the marginal likelihood: p(y_{1:T})
     double true_log_marginal_lik = -4.481802772037807;
     double log_marginal_lik = spf.get_log_marginal_likelihood();
@@ -252,13 +257,14 @@ double *compare_resampling_schemes(long seed, int num_particles, vector<SMCOptio
         cout << x_t << "->" << y_t << endl;
     }
     
+    DiscreteHMMParams params(mu, P, Q);
     SMCOptions *options = new SMCOptions();
     options->essThreshold = 1;
     double *vars = new double[resamplingSchemes.size()];
     for (unsigned long i = 0; i < resamplingSchemes.size(); i++) {
         options->resampling = resamplingSchemes[i];
-        SMC<int> smc(new DiscreteHMM(num_latent_states, mu, P, Q, obs), options);
-        smc.run_smc(random, num_particles);
+        SMC<int,DiscreteHMMParams> smc(new DiscreteHMM(num_latent_states, obs), options);
+        smc.run_smc(params);
         ParticlePopulation<int> *pop = smc.get_curr_population();
         vector<int> *particles = pop->get_particles();
         //vector<double> *log_weights = pop->get_log_weights();
