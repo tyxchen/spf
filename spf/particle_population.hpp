@@ -131,9 +131,12 @@ ParticlePopulation<P>* ParticlePopulation<P>::construct_equally_weighted_populat
 template <class P>
 ParticlePopulation<P>::~ParticlePopulation()
 {
-    delete particles;
-    delete log_weights;
-    delete normalized_weights;
+    if (!particles)
+        delete particles;
+    if (!log_weights)
+        delete log_weights;
+    if (!normalized_weights)
+        delete normalized_weights;
 }
 
 #endif /* particle_population_h */

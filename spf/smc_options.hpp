@@ -20,10 +20,11 @@ public:
         STRATIFIED = 1,
         SYSTEMATIC = 2
     };
-    ResamplingScheme resampling = MULTINOMIAL;
+    ResamplingScheme resampling_scheme = MULTINOMIAL;
     double essThreshold = 0.5;
     bool track_population = false;
     bool resample_last_round = false;
+    bool debug = true;
 
     gsl_rng *resampling_random;
     gsl_rng *main_random;

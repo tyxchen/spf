@@ -13,7 +13,8 @@ class PMCMCOptions
 {
 public:
     size_t num_iterations;
-    gsl_rng *random;
+    gsl_rng *random;    
 };
 
 #endif /* pmcmc_options_h */
+

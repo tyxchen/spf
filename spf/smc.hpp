@@ -28,7 +28,7 @@ template <class S, class P> class SMC
 {
     SMCOptions *options;
 	ProblemSpecification<S, P> *proposal; // pointer to proposal object to be passed into SMC constructor
-    
+
     double log_marginal_likelihood = 0;
     ParticlePopulation<S> *propose(gsl_rng *random, ParticlePopulation<S> *pop, int iter, int num_proposals, P &params);
     ParticlePopulation<S> *resample(const gsl_rng *random, SMCOptions::ResamplingScheme resampling_scheme, ParticlePopulation<S> *pop, int N);
@@ -37,6 +37,7 @@ template <class S, class P> class SMC
 public:
 	SMC(ProblemSpecification<S, P> *proposal, SMCOptions *options);
 	void run_smc(P &params);
+    S *sample(gsl_rng *random);
     double get_log_marginal_likelihood();
     inline ParticlePopulation<S>* get_curr_population() { return populations->back(); }
     ~SMC();
@@ -62,11 +63,13 @@ void SMC<S,P>::run_smc(P &params)
     //double log_num_particles = log(options->num_particles);
     for (int r = 0; r < R; r++)
     {
-        cout << "iter: " << r << endl;
+        if (options->debug)
+            cout << "iter: " << r << endl;
         curr_pop = propose(random, curr_pop, r, options->num_particles, params);
         populations->push_back(curr_pop);
         if (!options->track_population && r > 0) {
-            delete (*populations)[r-1]; // delete the ParticlePopulation (particles, log_weights, and normalized_weights)
+            if (!(*populations)[r-1])
+                delete (*populations)[r-1]; // delete the ParticlePopulation (particles, log_weights, and normalized_weights)
         }
         log_marginal_likelihood += curr_pop->get_log_norm();
         if (r == R - 1 && options->resample_last_round == false) {
@@ -75,7 +78,7 @@ void SMC<S,P>::run_smc(P &params)
 
         if (curr_pop->get_ess() <= options->essThreshold) {
             // resample
-            curr_pop = resample(random, options->resampling, curr_pop, options->num_particles);
+            curr_pop = resample(random, options->resampling_scheme, curr_pop, options->num_particles);
             delete (*populations)[r]; // delete pre-resampling population
             (*populations)[r] = curr_pop;
         }
@@ -133,7 +136,7 @@ ParticlePopulation<S>* SMC<S,P>::resample(const gsl_rng *random, SMCOptions::Res
             systematic_resampling(random, pop->get_normalized_weights(), N, indices);
             break;
     }
-    
+
     vector<S> *curr_particles = pop->get_particles();
 
     vector<S> *particles = new vector<S>();
@@ -144,9 +147,9 @@ ParticlePopulation<S>* SMC<S,P>::resample(const gsl_rng *random, SMCOptions::Res
         particles->push_back((*curr_particles)[indices[n]]);
         log_weights->push_back(log_w);
     }
-    
+
     ParticlePopulation<S> *new_pop = new ParticlePopulation<S>(particles, log_weights);
-    
+
     delete [] indices;
     return new_pop;
 }
@@ -155,6 +158,30 @@ template <class S, class P>
 double SMC<S,P>::get_log_marginal_likelihood()
 {
     return log_marginal_likelihood;
+}
+
+template <class S, class P>
+S *SMC<S,P>::sample(gsl_rng *random)
+{
+    ParticlePopulation<S> *pop = get_curr_population(); // it could be either normalized already or not (doesn't matter either way)
+    int N = 1;
+    unsigned int *indices = new unsigned int[N];
+    switch (options->resampling_scheme)
+    {
+        case SMCOptions::ResamplingScheme::MULTINOMIAL:
+            multinomial_resampling(random, pop->get_normalized_weights(), N, indices);
+            break;
+        case SMCOptions::ResamplingScheme::STRATIFIED:
+            stratified_resampling(random, pop->get_normalized_weights(), N, indices);
+            break;
+        case SMCOptions::ResamplingScheme::SYSTEMATIC:
+            systematic_resampling(random, pop->get_normalized_weights(), N, indices);
+            break;
+    }
+    
+    vector<S> *curr_particles = pop->get_particles();
+    S *sample = new S((*curr_particles)[indices[0]]); // use default copy constructor to create a pointer object
+    return sample;
 }
 
 template <class S, class P>

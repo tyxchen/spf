@@ -6,6 +6,7 @@
 //  Copyright © 2018 Seong-Hwan Jun. All rights reserved.
 //
 
+#include <fstream>
 #include <iostream>
 #include <iterator>
 #include <math.h>
@@ -14,7 +15,11 @@
 
 #include "discrete_hmm_model.hpp"
 #include "discrete_hmm_params.hpp"
+#include "lgm_param_proposal.hpp"
+#include "linear_gaussian_model.hpp"
+#include "linear_gaussian_model_params.hpp"
 #include "numerical_utils.hpp"
+#include "pmcmc.hpp"
 #include "sampling_utils.hpp"
 #include "smc.hpp"
 #include "smc_model.hpp"
@@ -98,7 +103,7 @@ void test_smc()
 
     SMCOptions *options = new SMCOptions();
     options->essThreshold = 1;
-    options->resampling = SMCOptions::ResamplingScheme::STRATIFIED;
+    options->resampling_scheme = SMCOptions::ResamplingScheme::STRATIFIED;
     options->num_particles = 10000;
     options->resampling_random = generate_random_object(1);
     options->main_random = generate_random_object(1);
@@ -192,7 +197,7 @@ void test_spf()
     options->essThreshold = DOUBLE_INF;
     options->resampling_random = generate_random_object(seed);
     options->main_random = generate_random_object(1);
-    options->resampling = SMCOptions::ResamplingScheme::STRATIFIED;
+    options->resampling_scheme = SMCOptions::ResamplingScheme::STRATIFIED;
     DiscreteHMMParams params(mu, P, Q);
     SPF<int, DiscreteHMMParams> spf(new DiscreteHMM(num_latent_states, obs), options);
     spf.run_spf(params);
@@ -262,7 +267,7 @@ double *compare_resampling_schemes(long seed, int num_particles, vector<SMCOptio
     options->essThreshold = 1;
     double *vars = new double[resamplingSchemes.size()];
     for (unsigned long i = 0; i < resamplingSchemes.size(); i++) {
-        options->resampling = resamplingSchemes[i];
+        options->resampling_scheme = resamplingSchemes[i];
         SMC<int,DiscreteHMMParams> smc(new DiscreteHMM(num_latent_states, obs), options);
         smc.run_smc(params);
         ParticlePopulation<int> *pop = smc.get_curr_population();
@@ -282,9 +287,101 @@ double *compare_resampling_schemes(long seed, int num_particles, vector<SMCOptio
             var_T[(*particles)[n]] += diff * diff;
         }
         vars[i] = var_T[0] / num_particles;
-        cout << options->resampling << ": " << vars[i] << endl;
+        cout << options->resampling_scheme << ": " << vars[i] << endl;
     }
     
     return vars;
 }
 
+void test_pmcmc()
+{
+    long seed = 20180402;
+    int length = 3;
+
+    vector<double> latent;
+    vector<double> obs;
+
+    gsl_rng* random = generate_random_object(seed);
+
+    // generate x_t, y_t where x_t
+    // x_1 ~ Normal(0, nu^2)
+    // x_t | x_{t-1} ~ Normal(A*x_{t-1} + a, sigma^2)
+    // y_t | x_t ~ Normal(B*x_t + b, tau^2)
+    
+    double mu_A = 0.2; double sd_A = 0.1; // prior over A
+    double mu_B = -0.7; double sd_B = 1.1; // prior over B
+    double mu_a = 0; double sd_a = 1.4; // prior over a
+    double mu_b = 0; double sd_b = 0.7; // prior over b
+    double alpha_x0 = 0.51; double beta_x0 = 2.01; // prior over x0 (InvGamma or Gamma)
+    double alpha_x = 1.01; double beta_x = 1.01; // prior over x (InvGamma or Gamma)
+    double alpha_y = 1.1; double beta_y = 1.1; // prior over y (InvGamma or Gamma)
+
+    double A = gsl_ran_gaussian(random, sd_A) + mu_A;
+    double B = gsl_ran_gaussian(random, sd_B) + mu_B;
+    double a = gsl_ran_gaussian(random, sd_a) + mu_a;
+    double b = gsl_ran_gaussian(random, sd_b) + mu_b;
+    double nu = gsl_ran_gamma(random, alpha_x0, beta_x0);
+    double sigma = gsl_ran_gamma(random, alpha_x, beta_x);
+    double tau = gsl_ran_gamma(random, alpha_y, beta_y);
+
+    double x_t = 0, y_t = 0;
+    for (int t = 0; t < length; t++)
+    {
+        if (t == 0) {
+            x_t = gsl_ran_gaussian(random, nu);
+        } else {
+            x_t = gsl_ran_gaussian(random, sigma) + A * latent[t-1] + a;
+        }
+        y_t = gsl_ran_gaussian(random, tau) + B * x_t + b;
+        latent.push_back(x_t);
+        obs.push_back(y_t);
+        cout << x_t << "->" << y_t << endl;
+    }
+
+    SMCOptions *options = new SMCOptions();
+    options->essThreshold = 1;
+    options->debug = false;
+    options->resampling_scheme = SMCOptions::ResamplingScheme::STRATIFIED;
+    options->num_particles = 1000;
+    options->resampling_random = generate_random_object(1);
+    options->main_random = generate_random_object(1);
+
+    SMC<double, LinearGaussianModelParams> *smc = new SMC<double, LinearGaussianModelParams>(new LinearGaussianModel(&obs), options);
+    
+    PMCMCOptions *pmcmc_options = new PMCMCOptions();
+    pmcmc_options->num_iterations = 10000;
+    pmcmc_options->random = generate_random_object(seed * 2);
+
+    ParamProposal<LinearGaussianModelParams> *param_proposal = new LGMParamProposal(mu_A, sd_A,
+                                                                                    mu_B, sd_B,
+                                                                                    mu_a, sd_a,
+                                                                                    mu_b, sd_b,
+                                                                                    alpha_x0, beta_x0,
+                                                                                    alpha_x, beta_x,
+                                                                                    alpha_y, beta_y);
+    ParticleMMH<double, LinearGaussianModelParams> pmcmc(pmcmc_options, smc, param_proposal);
+    pmcmc.run();
+    
+    cout << "Truth" << endl;
+    cout << "A: " << std::to_string(A) << endl;
+    cout << "a: " << std::to_string(a) << endl;
+    cout << "B: " << std::to_string(B) << endl;
+    cout << "b: " << std::to_string(b) << endl;
+    cout << "nu: " << std::to_string(nu) << endl;
+    cout << "tau: " << std::to_string(tau) << endl;
+    cout << "sigma: " << std::to_string(sigma) << endl;
+    
+    // output the chain to a file for further analysis
+    vector<LinearGaussianModelParams*> *params = pmcmc.get_parameters();
+    
+    char * dir = getcwd(NULL, 0);
+    printf("Current dir: %s", dir);
+    
+    ofstream out("/Users/seonghwanjun/Google Drive/Research/smc-research/repos/spf/output/test_pmcmc_output.csv", ofstream::out);
+    for (size_t i = 0; i < params->size(); i++)
+    {
+        LinearGaussianModelParams *p = (*params)[i];
+        out << p->A << ", " << p->a << ", " << p->B << ", " << p->b << ", " << p->nu << ", " << p->tau << ", " << p->sigma << endl;
+    }
+    out.close();
+}

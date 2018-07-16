@@ -89,7 +89,6 @@ CompactParticlePopulation<S> SPF<S,P>::propose_compact_population(PermutationStr
         curr_particles = pop->get_particles();
     }
     gsl_rng *random = stream.get_random();
-    int count = 0;
     while (compact_pop.get_num_particles() < options->num_particles ||
             (compact_pop.get_num_particles() < options->max_virtual_particles &&
              compact_pop.ess()/options->num_particles < options->essThreshold))
@@ -126,7 +125,7 @@ ParticlePopulation<S> *SPF<S,P>::contraction(PermutationStream &stream, Particle
         curr_particles = pop->get_particles();
     }
 
-    switch (options->resampling)
+    switch (options->resampling_scheme)
     {
         case SMCOptions::ResamplingScheme::MULTINOMIAL:
             multinomial_resampling_sorted_uniform(options->resampling_random, N, sorted_uniform);

@@ -26,7 +26,7 @@
 #include "sampling_utils.hpp"
 #include "smc.hpp"
 #include "smc_model.hpp"
-#include "test.hpp"
+#include "../tests/test.hpp"
 
 using namespace std;
 
@@ -90,8 +90,9 @@ int main()
     //test_boost();
     //test_resampling_schemes();
     //test_copy_unordered_map();
-    test_spf();
+    //test_spf();
     //test_smc();
+    test_pmcmc();
 	return 0;
 }
 
