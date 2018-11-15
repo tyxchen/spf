@@ -21,12 +21,10 @@
 
 #include <gsl/gsl_randist.h>
 
-#include "discrete_hmm_model.hpp"
 #include "numerical_utils.hpp"
 #include "sampling_utils.hpp"
 #include "smc.hpp"
 #include "smc_model.hpp"
-#include "../tests/test.hpp"
 
 using namespace std;
 
@@ -92,7 +90,8 @@ int main()
     //test_copy_unordered_map();
     //test_spf();
     //test_smc();
-    test_pmcmc();
+    //test_pmcmc();
+    cout << "test CMake!!" << endl;
 	return 0;
 }
 
