@@ -8,11 +8,9 @@
 
 #include "discrete_hmm_params.hpp"
 
-DiscreteHMMParams::DiscreteHMMParams(vector<double> initial_distn,
-                                     vector<vector<double> > transition_probs,
-                                     vector<vector<double> > emission_probs)
+DiscreteHMMParams::DiscreteHMMParams(vector<double> &initial,
+                                     vector<vector<double> > &transition,
+                                     vector<vector<double> > &emission)
+: initial_distn(initial), transition_probs(transition), emission_probs(emission)
 {
-    this->initial_distn = initial_distn;
-    this->transition_probs = transition_probs;
-    this->emission_probs = emission_probs;
 }

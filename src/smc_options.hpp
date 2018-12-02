@@ -24,12 +24,13 @@ public:
     double essThreshold = 0.5;
     bool track_population = false;
     bool resample_last_round = false;
-    bool debug = true;
+    bool useSPF = false;
+    bool debug = false;
 
-    gsl_rng *resampling_random;
-    gsl_rng *main_random;
+    long main_seed = 1;
+    long resampling_seed = 2;
 
-    // at some point, look into implementing multi-threading
+    // TODO: implement multi-threading and GPU computation
     // unsigned int num_threads = 4;
 };
 

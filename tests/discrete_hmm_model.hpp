@@ -20,16 +20,21 @@ using namespace std;
 
 class DiscreteHMM : public ProblemSpecification<int, DiscreteHMMParams>
 {
-	unsigned long num_states;
+	size_t num_states;
 	//vector<double> initial_distn;
 	//vector<vector<double> > transition_probs;
     //vector<vector<double> > emission_probs;
     vector<int> obs;
 public:
-	DiscreteHMM(unsigned long num_states, vector<int> obs);
+	DiscreteHMM(size_t num_states, vector<int> &obs);
     unsigned long num_iterations();
     std::pair<int, double> propose_initial(gsl_rng *random, DiscreteHMMParams &params);
     std::pair<int, double> propose_next(gsl_rng *random, int t, int curr, DiscreteHMMParams &params);
+
+    static int initial(gsl_rng *random, DiscreteHMMParams &params);
+    static int forward(gsl_rng *random, int curr, DiscreteHMMParams &params);
+    static int emission(gsl_rng *random, int curr, DiscreteHMMParams &params);
+    static void generate_data(gsl_rng *random, size_t T, DiscreteHMMParams &params, vector<int> &latent, vector<int> &obs);
     ~DiscreteHMM();
 };
 

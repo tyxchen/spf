@@ -32,6 +32,9 @@ template <class S, class P> class SPF
     ParticlePopulation<S> *contraction(PermutationStream &stream, ParticlePopulation<S> *prev_pop, CompactParticlePopulation<S> &compact_pop, int N, int iter, P &params);
     vector<ParticlePopulation<S> *> *populations = 0;
 
+    gsl_rng *main_random;
+    gsl_rng *resampling_random;
+
 public:
     SPF(ProblemSpecification<S, P> *proposal, SMCOptions *options);
     void run_spf(P &params);
@@ -54,6 +57,9 @@ void SPF<S,P>::run_spf(P &params)
 {
     unsigned long R = proposal->num_iterations();
 
+    main_random = generate_random_object(options->main_seed);
+    resampling_random = generate_random_object(options->resampling_seed);
+
     ParticlePopulation<S> *curr_pop = 0;
 
     log_marginal_likelihood = 0.0;
@@ -61,13 +67,15 @@ void SPF<S,P>::run_spf(P &params)
     PermutationStream *stream = new PermutationStream(options->num_particles);
     for (int r = 0; r < R; r++)
     {
-        seed = gsl_rng_get(options->main_random);
+        seed = gsl_rng_get(main_random);
         stream->set_seed(seed);
 
         // expansion
         CompactParticlePopulation<S> compact_pop = propose_compact_population(*stream, curr_pop, r, params);
         log_marginal_likelihood += compact_pop.logZ();
-        cout << "ESS: " << compact_pop.ess() << ", sum_of_sq_weights: " << compact_pop.get_log_sum_of_square_weights() << ", nParticles: " << compact_pop.get_num_particles() << ", logZ: " << log_marginal_likelihood << endl;
+        if (options->debug) {
+            cout << "ESS: " << compact_pop.ess() << ", sum_of_sq_weights: " << compact_pop.get_log_sum_of_square_weights() << ", nParticles: " << compact_pop.get_num_particles() << ", logZ: " << log_marginal_likelihood << endl;
+        }
 
         // contraction
         stream->reset();
@@ -118,7 +126,7 @@ ParticlePopulation<S> *SPF<S,P>::contraction(PermutationStream &stream, Particle
     double log_norm = compact_pop.get_log_sum_weights();
     
     vector<S> *new_particles = new vector<S>(N);
-    vector<double> *new_log_weights = new vector<double>(N);
+    //vector<double> *new_log_weights = new vector<double>(N);
 
     vector<S> *curr_particles = 0;
     if (pop != 0) {
@@ -128,19 +136,19 @@ ParticlePopulation<S> *SPF<S,P>::contraction(PermutationStream &stream, Particle
     switch (options->resampling_scheme)
     {
         case SMCOptions::ResamplingScheme::MULTINOMIAL:
-            multinomial_resampling_sorted_uniform(options->resampling_random, N, sorted_uniform);
+            multinomial_resampling_sorted_uniform(resampling_random, N, sorted_uniform);
             break;
         case SMCOptions::ResamplingScheme::STRATIFIED:
-            stratified_resampling_sorted_uniform(options->resampling_random, N, sorted_uniform);
+            stratified_resampling_sorted_uniform(resampling_random, N, sorted_uniform);
             break;
         case SMCOptions::ResamplingScheme::SYSTEMATIC:
-            systematic_resampling_sorted_uniform(options->resampling_random, N, sorted_uniform);
+            systematic_resampling_sorted_uniform(resampling_random, N, sorted_uniform);
             break;
     }
 
     gsl_rng *random = stream.get_random();
     CompactParticlePopulation<S> sanity_check;
-    double log_weight = log(1./N);
+    //double log_weight = log(1./N);
     for (int n = 0; n < N; n++)
     {
         while (normalized_partial_sum < sorted_uniform[n]) {
@@ -154,7 +162,7 @@ ParticlePopulation<S> *SPF<S,P>::contraction(PermutationStream &stream, Particle
             sanity_check.add_weight(ret.second);
         }
         (*new_particles)[n] = ret.first;
-        (*new_log_weights)[n] = log_weight;
+        //(*new_log_weights)[n] = log_weight;
     }
     
     int num_iter_left = compact_pop.get_num_particles() - sanity_check.get_num_particles();
@@ -168,9 +176,12 @@ ParticlePopulation<S> *SPF<S,P>::contraction(PermutationStream &stream, Particle
         sanity_check.add_weight(ret.second);
     }
 
-    cout << "|" << log_norm << " - " << sanity_check.get_log_sum_weights() << "| = " << abs(log_norm - sanity_check.get_log_sum_weights()) << endl;
+    if (options->debug) {
+        cout << "|" << log_norm << " - " << sanity_check.get_log_sum_weights() << "| = " << abs(log_norm - sanity_check.get_log_sum_weights()) << endl;
+    }
 
-    ParticlePopulation<S> *new_pop = new ParticlePopulation<S>(new_particles, new_log_weights);
+    //ParticlePopulation<S> *new_pop = new ParticlePopulation<S>(new_particles, new_log_weights);
+    ParticlePopulation<S> *new_pop = new ParticlePopulation<S>(new_particles);
     delete [] sorted_uniform;
     return new_pop;
 

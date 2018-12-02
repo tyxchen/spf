@@ -30,7 +30,7 @@ template <class S, class P> class SMC
 	ProblemSpecification<S, P> *proposal; // pointer to proposal object to be passed into SMC constructor
 
     double log_marginal_likelihood = 0;
-    ParticlePopulation<S> *propose(gsl_rng *random, ParticlePopulation<S> *pop, int iter, int num_proposals, P &params);
+    pair<double, ParticlePopulation<S>*> propose(gsl_rng *random, ParticlePopulation<S> *pop, int iter, int num_proposals, P &params);
     ParticlePopulation<S> *resample(const gsl_rng *random, SMCOptions::ResamplingScheme resampling_scheme, ParticlePopulation<S> *pop, int N);
     vector<ParticlePopulation<S> *> *populations = 0;
 
@@ -40,6 +40,7 @@ public:
     S *sample(gsl_rng *random);
     double get_log_marginal_likelihood();
     inline ParticlePopulation<S>* get_curr_population() { return populations->back(); }
+    inline ParticlePopulation<S> *get_population(size_t i) { return populations->at(i); }
     ~SMC();
 };
 
@@ -56,8 +57,9 @@ void SMC<S,P>::run_smc(P &params)
 {
     unsigned long R = proposal->num_iterations();
 
+    pair<double, ParticlePopulation<S>*> ret_val;
     ParticlePopulation<S> *curr_pop = 0;
-    gsl_rng *random = options->main_random;
+    gsl_rng *random = generate_random_object(options->main_seed);
 
     log_marginal_likelihood = 0.0;
     //double log_num_particles = log(options->num_particles);
@@ -65,18 +67,19 @@ void SMC<S,P>::run_smc(P &params)
     {
         if (options->debug)
             cout << "iter: " << r << endl;
-        curr_pop = propose(random, curr_pop, r, options->num_particles, params);
+        ret_val = propose(random, curr_pop, r, options->num_particles, params);
+        curr_pop = ret_val.second;
         populations->push_back(curr_pop);
         if (!options->track_population && r > 0) {
             if (!(*populations)[r-1])
                 delete (*populations)[r-1]; // delete the ParticlePopulation (particles, log_weights, and normalized_weights)
         }
-        log_marginal_likelihood += curr_pop->get_log_norm();
+        log_marginal_likelihood += ret_val.first;
         if (r == R - 1 && options->resample_last_round == false) {
             break;
         }
 
-        if (curr_pop->get_ess() <= options->essThreshold) {
+        if (options->essThreshold >= 1.0 || curr_pop->get_ess() <= options->essThreshold) {
             // resample
             curr_pop = resample(random, options->resampling_scheme, curr_pop, options->num_particles);
             delete (*populations)[r]; // delete pre-resampling population
@@ -86,26 +89,24 @@ void SMC<S,P>::run_smc(P &params)
 }
 
 template <class S, class P>
-ParticlePopulation<S>* SMC<S,P>::propose(gsl_rng *random, ParticlePopulation<S> *pop, int iter, int num_proposals, P &params)
+pair<double, ParticlePopulation<S>*> SMC<S,P>::propose(gsl_rng *random, ParticlePopulation<S> *pop, int iter, int num_proposals, P &params)
 {
+    double log_Z_ratio = DOUBLE_NEG_INF;
     vector<S> *curr_particles = 0;
     vector<double> *curr_log_weights = 0;
-    if (pop == 0) {
-        curr_log_weights = new vector<double>(num_proposals);
-        double log_base = log(num_proposals);
-        for (size_t i = 0; i < num_proposals; i++)
-        {
-            (*curr_log_weights)[i] = -log_base;
-        }
-    } else {
+    bool is_resampled = true;
+    if (pop != 0) {
         curr_particles = pop->get_particles();
         curr_log_weights = pop->get_log_weights();
+        is_resampled = pop->is_resampled();
     }
 
     vector<S> *new_particles = new vector<S>(num_proposals);
     vector<double> *new_log_weights = new vector<double>(num_proposals);
 
+    double log_norm = DOUBLE_NEG_INF;
     std::pair<S, double> ret;
+    double log_N = log(num_proposals);
     for (int n = 0; n < num_proposals; n++)
     {
         if (pop == 0) {
@@ -114,10 +115,17 @@ ParticlePopulation<S>* SMC<S,P>::propose(gsl_rng *random, ParticlePopulation<S> 
             ret = proposal->propose_next(random, iter, (*curr_particles)[n], params);
         }
         (*new_particles)[n] = ret.first;
-        (*new_log_weights)[n] = ret.second + (*curr_log_weights)[n];
+        if (is_resampled) {
+            (*new_log_weights)[n] = ret.second + log_N;
+        } else {
+            (*new_log_weights)[n] = ret.second + (*curr_log_weights)[n];
+        }
+        log_norm = log_add(log_norm, (*new_log_weights)[n]);
+        log_Z_ratio = log_add(log_Z_ratio, ret.second);
     }
-    ParticlePopulation<S> *new_pop = new ParticlePopulation<S>(new_particles, new_log_weights);
-    return new_pop;
+    log_Z_ratio -= log(num_proposals);
+    ParticlePopulation<S> *new_pop = new ParticlePopulation<S>(new_particles, new_log_weights, log_norm);
+    return make_pair(log_Z_ratio, new_pop);
 }
 
 template <class S, class P>
@@ -140,15 +148,12 @@ ParticlePopulation<S>* SMC<S,P>::resample(const gsl_rng *random, SMCOptions::Res
     vector<S> *curr_particles = pop->get_particles();
 
     vector<S> *particles = new vector<S>();
-    vector<double> *log_weights = new vector<double>();
-    double log_w = -log(N);
     for (int n = 0; n < N; n++)
     {
         particles->push_back((*curr_particles)[indices[n]]);
-        log_weights->push_back(log_w);
     }
 
-    ParticlePopulation<S> *new_pop = new ParticlePopulation<S>(particles, log_weights);
+    ParticlePopulation<S> *new_pop = new ParticlePopulation<S>(particles);
 
     delete [] indices;
     return new_pop;

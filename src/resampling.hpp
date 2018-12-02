@@ -11,9 +11,12 @@
 
 #include <math.h>
 
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_permutation.h>
+
 #include "particle_population.hpp"
 #include "sampling_utils.hpp"
-#include "smc_options.hpp"
 
 template <typename P>
 void multinomial_resampling(const gsl_rng *random, const vector<double> *probs, int N, unsigned int *indices);

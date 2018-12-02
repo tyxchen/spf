@@ -22,5 +22,4 @@ public:
 	virtual ~ProblemSpecification() { }
 };
 
-
 #endif /* SRC_SMC_MODEL_HPP_ */

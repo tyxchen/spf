@@ -42,11 +42,16 @@ double normalize(vector<double> &log_weights, vector<double> &weights)
 {
     // compute the lognorm
     double log_norm = log_add(log_weights);
+    normalize(log_weights, weights, log_norm);
+    return log_norm;
+}
+
+void normalize(vector<double> &log_weights, vector<double> &weights, double log_norm)
+{
     for (unsigned int i = 0; i < log_weights.size(); i++)
     {
         weights[i] = exp(log_weights[i] - log_norm);
     }
-    return log_norm;
 }
 
 double normalize_destructively(vector<double> &log_weights)

@@ -18,22 +18,26 @@ template <class P>
 class ParticlePopulation
 {
     vector<P> *particles;
-    vector<double> *log_weights;
+    vector<double> *log_weights = 0;
     vector<double> *normalized_weights = 0;
     unsigned long num_particles;
-    double ess = -1;
+    double ess = NaN;
     double sum_weights;
     double sum_weights_squared;
-    double log_norm = -1;
+    double log_norm = NaN;
+    bool resampled = false;
 
 public:
+    ParticlePopulation(vector<P> *particles);
     ParticlePopulation(vector<P> *particles, vector<double> *log_weights);
-    ParticlePopulation(vector<P> *particles, vector<double> *log_weights, vector<double> *normalized_weights);
+    ParticlePopulation(vector<P> *particles, vector<double> *log_weights, double log_norm);
+    //ParticlePopulation(vector<P> *particles, vector<double> *log_weights, vector<double> *normalized_weights);
     inline vector<double> *get_log_weights() { return log_weights; }
     inline vector<P> *get_particles() { return particles; }
     vector<double> *get_normalized_weights();
     double get_ess();
     double get_log_norm();
+    bool is_resampled();
     static ParticlePopulation<P>* construct_equally_weighted_population(int num_particles);
     static ParticlePopulation<P>* construct_equally_weighted_population(vector<P> *particles);
     ~ParticlePopulation();
@@ -48,27 +52,40 @@ ParticlePopulation<P>::ParticlePopulation(vector<P> *particles, vector<double> *
 }
 
 template <class P>
-ParticlePopulation<P>::ParticlePopulation(vector<P> *particles, vector<double> *log_weights, vector<double> *normalized_weights)
+ParticlePopulation<P>::ParticlePopulation(vector<P> *particles, vector<double> *log_weights, double log_norm) :
+ParticlePopulation(particles, log_weights)
+{
+    this->log_norm = log_norm;
+}
+
+template <class P>
+ParticlePopulation<P>::ParticlePopulation(vector<P> *particles)
 {
     this->particles = particles;
-    this->log_weights = log_weights;
-    this->normalized_weights = normalized_weights;
-    num_particles = particles->size();
-    this->get_ess();
+    this->num_particles = particles->size();
+    this->resampled = true;
 }
+
+//template <class P>
+//ParticlePopulation<P>::ParticlePopulation(vector<P> *particles, vector<double> *log_weights, vector<double> *normalized_weights)
+//{
+//    this->particles = particles;
+//    this->log_weights = log_weights;
+//    this->normalized_weights = normalized_weights;
+//    num_particles = particles->size();
+//    this->get_ess();
+//}
 
 template <class P>
 double ParticlePopulation<P>::get_ess()
 {
-    if (ess == -1) {
+    if (ess == NaN) {
         // compute ESS
         ess = 0.0;
         sum_weights = 0.0;
         sum_weights_squared = 0.0;
         if (normalized_weights == 0) {
-            normalized_weights = new vector<double>(num_particles);
-            // normalize the log weights, compute log_norm
-            log_norm = normalize(*log_weights, *normalized_weights);
+            get_normalized_weights();
         }
         for (int i = 0; i < num_particles; i++) {
             ess += (*normalized_weights)[i] * (*normalized_weights)[i];
@@ -82,7 +99,7 @@ double ParticlePopulation<P>::get_ess()
 template <class P>
 double ParticlePopulation<P>::get_log_norm()
 {
-    if (log_norm == -1) {
+    if (log_norm == NaN) {
         // compute ESS
         get_ess();
     }
@@ -93,9 +110,28 @@ template <class P>
 vector<double> *ParticlePopulation<P>::get_normalized_weights()
 {
     if (normalized_weights == 0) {
-        get_ess();
+        normalized_weights = new vector<double>(num_particles);
+        if (is_resampled()) {
+            double w = 1./num_particles;
+            for (size_t k = 0; k < num_particles; k++) {
+                (*normalized_weights)[k] = w;
+            }
+        } else {
+            if (log_norm == NaN) {
+                // normalize the log weights, compute log_norm
+                log_norm = normalize(*log_weights, *normalized_weights);
+            } else {
+                normalize(*log_weights, *normalized_weights, log_norm);
+            }
+        }
     }
     return normalized_weights;
+}
+
+template <class P>
+bool ParticlePopulation<P>::is_resampled()
+{
+    return resampled;
 }
 
 template<class P>

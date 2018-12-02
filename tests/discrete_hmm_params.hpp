@@ -16,12 +16,12 @@ using namespace std;
 class DiscreteHMMParams
 {
 public:
-    DiscreteHMMParams(vector<double> initial_distn,
-                      vector<vector<double> > transition_probs,
-                      vector<vector<double> > emission_probs);
-    vector<double> initial_distn;
-    vector<vector<double> > emission_probs;
-    vector<vector<double> > transition_probs;
+    vector<double> &initial_distn;
+    vector<vector<double> > &transition_probs;
+    vector<vector<double> > &emission_probs;
+    DiscreteHMMParams(vector<double> &initial_distn,
+                      vector<vector<double> > &transition_probs,
+                      vector<vector<double> > &emission_probs);
 };
 
 #endif /* discrete_hmm_params_hpp */
