@@ -28,7 +28,7 @@ double uniform(const gsl_rng *random, double lower, double upper);
 int discrete_uniform(const gsl_rng *random, unsigned long N);
 
 // draw one sample and return the index of that sample {1, ..., normalized_probs.size()}
-int multinomial(const gsl_rng *random, vector<double> normalized_probs);
+unsigned int multinomial(const gsl_rng *random, vector<double> normalized_probs);
 
 // ASSERT: the length of result is same as normalized_probs
 void multinomial(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *result);

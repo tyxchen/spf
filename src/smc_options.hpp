@@ -29,9 +29,20 @@ public:
 
     long main_seed = 1;
     long resampling_seed = 2;
+    
+    gsl_rng *main_random = 0;
+    gsl_rng *resampling_random = 0;
 
     // TODO: implement multi-threading and GPU computation
     // unsigned int num_threads = 4;
+    
+    void init();
 };
+
+void SMCOptions::init()
+{
+    main_random = generate_random_object(main_seed);
+    resampling_random = generate_random_object(resampling_seed);
+}
 
 #endif /* smc_options_h */

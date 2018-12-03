@@ -49,6 +49,7 @@ SMC<S,P>::SMC(ProblemSpecification<S, P> *proposal, SMCOptions *options)
 {
     this->proposal = proposal;
     this->options = options;
+    this->options->init();
     this->populations = new vector<ParticlePopulation<S> *>();
 }
 
@@ -79,6 +80,8 @@ void SMC<S,P>::run_smc(P &params)
             break;
         }
 
+        if (options->essThreshold == 0.0) // no resampling (essneitally SIS)
+            continue;
         if (options->essThreshold >= 1.0 || curr_pop->get_ess() <= options->essThreshold) {
             // resample
             curr_pop = resample(random, options->resampling_scheme, curr_pop, options->num_particles);

@@ -26,7 +26,7 @@ gsl_rng* generate_random_object(long seed)
     
 }
 
-int multinomial(const gsl_rng *random, vector<double> normalized_probs)
+unsigned int multinomial(const gsl_rng *random, vector<double> normalized_probs)
 {
     double u = gsl_rng_uniform(random);
     double sum = 0.0;
@@ -123,8 +123,10 @@ void multinomial_sample_indices(const gsl_rng *random, unsigned int N, vector<do
             sum += normalized_probs[idx];
             idx++;
         }
+        if (idx > N) {
+            sum = sum + 0;
+        }
         indices[n] = idx;
     }
-
     delete [] uvec;
 }

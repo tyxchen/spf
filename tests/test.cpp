@@ -20,6 +20,7 @@
 
 #include <gsl/gsl_randist.h>
 
+#include "csmc.hpp"
 #include "discrete_hmm_model.hpp"
 #include "discrete_hmm_params.hpp"
 #include "numerical_utils.hpp"
@@ -188,6 +189,59 @@ void test_smc(long seed)
     cout << "total error: " << total_error << endl;
 }
 
+void test_csmc(long seed)
+{
+    cout << "Testing conditional SMC..." << endl;
+    SMCOptions *options = new SMCOptions();
+    options->main_seed = seed;
+    options->resampling_seed = seed+123;
+    options->essThreshold = 1;
+    options->num_particles = 1000;
+    
+    ConditionalSMC<int, DiscreteHMMParams> csmc(new DiscreteHMM(num_latent_states, y), options);
+    vector<pair<int, double>> *genealogy = csmc.initialize(true_params);
+    double logZ = csmc.get_log_marginal_likelihood();
+    cout << logZ << endl;
+    for (size_t num_iter = 0; num_iter < 100; num_iter++) {
+        genealogy = csmc.run_csmc(true_params, genealogy);
+        logZ = csmc.get_log_marginal_likelihood();
+        cout << logZ << endl;
+    }
+    unsigned int r = 2;
+    vector<int> *particles = csmc.get_particles(r);
+    vector<double> *log_weights = csmc.get_log_weights(r);
+    double log_norm = csmc.get_log_norm(r);
+    vector<double> *normalized_weights = new vector<double>(particles->size());
+    normalize(*log_weights, *normalized_weights, log_norm);
+    
+    // true log marginal likelihood computed using sum-product algorithm
+    double true_log_marginal_lik = -4.481802772037807;
+    // retrieve the estimate
+    double log_marginal_lik = csmc.get_log_marginal_likelihood();
+    cout << "Estimated log p(y_{1:T}) = " << log_marginal_lik << endl;
+    cout << "True log p(y_{1:T}) = " << true_log_marginal_lik << endl;
+    cout << "Diff: " << abs(true_log_marginal_lik - log_marginal_lik) << endl;
+    
+    // true  marginal likelihood of x_3 = {0, 1, 2} computed using sum-product
+    double truth_T[]{0.41014761778484926, 0.16648987890038008, 0.4233625033147706};
+    vector<double> probs_T(num_latent_states);
+    for (int n = 0; n < options->num_particles; n++)
+    {
+        probs_T[(*particles)[n]] += (*normalized_weights)[n];
+    }
+    
+    double total_error = 0.0;
+    for (int i = 0; i < num_latent_states; i++)
+    {
+        double err = abs(probs_T[i] - truth_T[i]);
+        total_error += err;
+        cout << "Estimated P(x_T = " << i << ") = " << probs_T[i] << endl;
+        cout << "True P(x_T = " << i << ") = " << truth_T[i] << endl;
+        cout << "Diff: " << err << endl;
+    }
+    cout << "total error: " << total_error << endl;
+}
+
 void test_spf(long seed)
 {
     cout << "Testing SPF..." << endl;
@@ -233,7 +287,7 @@ void test_spf(long seed)
     cout << "total error: " << total_error << endl;
 }
 
-void test_resampling_schemes(long seed, unsigned long T)
+void test_resampling_schemes(long seed, unsigned int T)
 {
     vector<SMCOptions::ResamplingScheme> resampling_schemes;
     resampling_schemes.push_back(SMCOptions::ResamplingScheme::MULTINOMIAL);
@@ -339,13 +393,14 @@ void test_pmcmc(long seed)
 int main()
 {
     long seed = 123;
-    test_smc(seed);
-    test_spf(seed);
+    //test_smc(seed);
+    //test_spf(seed);
+    test_csmc(seed);
 
 //    seed = 532;
 //    unsigned int T = 100;
 //    test_resampling_schemes(seed, T);
 
-    test_pmcmc(seed);
+    //test_pmcmc(seed);
     return 0;
 }

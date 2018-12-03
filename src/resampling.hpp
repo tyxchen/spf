@@ -27,7 +27,7 @@ void multinomial_resampling_sorted_uniform(const gsl_rng *random, int N, double 
 void stratified_resampling_sorted_uniform(const gsl_rng *random, int N, double *u);
 void systematic_resampling_sorted_uniform(const gsl_rng *random, int N, double *u);
 
-void multinomial_resampling(const gsl_rng *random, const vector<double> *probs, int N, unsigned int *indices)
+void multinomial_resampling(const gsl_rng *random, const vector<double> *probs, unsigned int N, unsigned int *indices)
 {
     multinomial_sample_indices(random, N, *probs, indices);
 }
