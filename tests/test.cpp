@@ -206,7 +206,7 @@ bool test_smc(long seed)
     }
     cout << "average error: " << total_error/num_latent_states << endl;
 
-    if (total_error/num_latent_states < ERR_TOL) {
+    if (total_error/num_latent_states > ERR_TOL) {
         return false;
     }
     return true;
@@ -262,7 +262,7 @@ bool test_csmc(long seed)
     }
     cout << "average error: " << total_error/num_latent_states << endl;
 
-    if (total_error/num_latent_states < ERR_TOL) {
+    if (total_error/num_latent_states > ERR_TOL) {
         return false;
     }
 
@@ -313,7 +313,7 @@ bool test_spf(long seed)
     }
     cout << "average error: " << total_error/num_latent_states << endl;
     
-    if (total_error/num_latent_states < ERR_TOL) {
+    if (total_error/num_latent_states > ERR_TOL) {
         return false;
     }
     
@@ -453,10 +453,15 @@ void test_pg(long seed)
 int main()
 {
     long seed = 123;
-    test_smc(seed);
-    test_spf(seed);
-    test_csmc(seed);
+    if (!test_smc(seed))
+        return -1;
+    if (!test_spf(seed))
+        return -1;
+    if (!test_csmc(seed))
+        return -1;
+
     //test_pmmh(seed);
     //test_pg(seed);
+    cout << "All tests passed!" << endl;
     return 0;
 }

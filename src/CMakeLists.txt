@@ -9,7 +9,6 @@ if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS}) 
 endif()
 
-#file( GLOB PUBLIC_INCLUDE ${PROJECT_SOURCE_DIR}/include/*.hpp)
-file( GLOB PUBLIC_INCLUDE *.hpp)
-install(FILES ${PUBLIC_INCLUDE} DESTINATION include/spf)
-install(TARGETS SPF DESTINATION bin) 
+file( GLOB PUBLIC_INCLUDE *.hpp) # grab all hpp files
+install(FILES ${PUBLIC_INCLUDE} DESTINATION include/spf) # copy it to include/spf
+install(TARGETS SPF DESTINATION bin) # install .a file to bin/

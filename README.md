@@ -55,7 +55,7 @@ smc_options.resampling_seed = 8234532;
 smc_options.track_population = true;
 smc_options.init();
 ```
-Note: `init` function generates random object for the seend provided. This class may change over time.
+Note: `init()` function generates random object for the seed provided to the options. This is bit cumbersome and it may change over time.
 
 ## Running SMC
 Assuming that the parameters are known, we can infer the latent states using `SMC`. It offers features to get log marginal likelihood estimate in addition to retrieving the particle population at each iteration of the SMC.
