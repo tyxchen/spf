@@ -1,6 +1,3 @@
-#file( GLOB SRCS *.cpp *.hpp ${PROJECT_SOURCE_DIR}/include/*.hpp)
-#include_directories(${PROJECT_SOURCE_DIR}/include)
-
 file( GLOB SRCS *.cpp *.hpp)
 add_library(SPF STATIC ${SRCS})
 

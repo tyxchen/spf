@@ -10,4 +10,9 @@ addons:
       - cmake
       - gsl
       - boost
-script: cmake .
+script:
+  - ls
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make
