@@ -4,9 +4,8 @@ compiler:
 os: osx
 dist: trusty
 addons:
-  apt:
-    sources:
-      - george-edison55-precise-backports
+  homebrew:
     packages:
-      - cmake-data
       - cmake
+      - gsl
+      - boost
