@@ -12,7 +12,7 @@
 #include <gsl/gsl_rng.h>
 
 template <class P>
-class ParamProposal
+class PMMHProposal
 {
 public:
     virtual P *sample_from_prior(gsl_rng *random) = 0;

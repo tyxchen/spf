@@ -176,7 +176,7 @@ vector<pair<S, double>> *ConditionalSMC<S,P>::sample_genealogy(const gsl_rng *ra
         size_t curr_iter = R - r - 1;
         S particle = (*particles[curr_iter])[idx];
         double log_w = (*log_weights[curr_iter])[idx];
-        genealogy->push_back(make_pair(particle, log_w));
+        (*genealogy)[curr_iter] = make_pair(particle, log_w);
 
         if (curr_iter > 0) {
             idx = (*ancestors[curr_iter-1])[idx];

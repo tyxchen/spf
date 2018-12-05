@@ -24,6 +24,7 @@
 #include "discrete_hmm_model.hpp"
 #include "discrete_hmm_params.hpp"
 #include "numerical_utils.hpp"
+#include "pg.hpp"
 #include "pmmh.hpp"
 #include "sampling_utils.hpp"
 #include "smc.hpp"
@@ -31,7 +32,8 @@
 #include "smc_options.hpp"
 #include "spf.hpp"
 #include "sv_model.hpp"
-#include "sv_model_param_proposal.hpp"
+#include "sv_model_gibbs_proposal.hpp"
+#include "sv_model_random_walk_proposal.hpp"
 
 /*****
  * global variables for testing
@@ -361,9 +363,9 @@ double *compare_resampling_schemes(long seed, unsigned int num_particles, unsign
     return vars;
 }
 
-void test_pmcmc(long seed)
+void test_pmmh(long seed)
 {
-    // run PMMH on the initial distribution mu
+    // run PMMH on beta of SVModel
     SMCOptions *smc_options = new SMCOptions();
     smc_options->num_particles = 200;
     SVModel *proposal = new SVModel(sv_y);
@@ -374,7 +376,7 @@ void test_pmcmc(long seed)
 
     PMCMCOptions *pmcmc_options = new PMCMCOptions(seed, 50000);
     pmcmc_options->burn_in = 5000;
-    ParamProposal<SVModelParams> *param_proposal = new SVModelParamProposal();
+    PMMHProposal<SVModelParams> *param_proposal = new SVModelRandomWalkProposal();
     ParticleMMH<double, SVModelParams> pmmh(pmcmc_options, smc, param_proposal);
     pmmh.run();
     vector<SVModelParams *> *samples = pmmh.get_parameters();
@@ -390,17 +392,66 @@ void test_pmcmc(long seed)
     cout << mean << ", " << true_sv_params.beta << endl;
 }
 
+void test_pg(long seed)
+{
+    /*
+    vector<double> sv_y100;
+    string line;
+    ifstream y_file("/Users/seonghwanjun/Dropbox/Research/smc-research/repos/spf/input/sv_y.txt");
+    if (y_file.is_open()) {
+        while (getline(y_file, line)) {
+            cout << line << endl;
+            sv_y100.push_back(std::stod(line));
+        }
+        y_file.close();
+    }
+     */
+    
+    // run PG on beta of SVModel
+    SMCOptions *smc_options = new SMCOptions();
+    smc_options->num_particles = 200;
+    ProblemSpecification<double, SVModelParams> *proposal = new SVModel(sv_y);
+    ConditionalSMC<double, SVModelParams> *csmc = new ConditionalSMC<double, SVModelParams>(proposal, smc_options);
+
+    PMCMCOptions *pmcmc_options = new PMCMCOptions(seed, 4000);
+    pmcmc_options->burn_in = 1000;
+    
+    double a = 0.01, b = 0.01;
+    PGProposal<double, SVModelParams> *param_proposal = new SVModelGibbsProposal(a, b, sv_y);
+    
+    ParticleGibbs<double, SVModelParams> pg(pmcmc_options, csmc, param_proposal);
+    pg.run();
+    vector<SVModelParams *> *samples = pg.get_parameters();
+    // compute the posterior mean for beta
+    double mean = 0.0;
+    size_t count = 0;
+    for (size_t i = pmcmc_options->burn_in; i < samples->size(); i+=10) {
+        cout << (*samples)[i]->beta << endl;
+        mean += (*samples)[i]->beta;
+        count++;
+    }
+    mean /= count;
+    cout << mean << ", " << true_sv_params.beta << endl;
+    
+    vector<vector<pair<double, double>> *> *states = pg.get_states();
+    vector<pair<double, double>> *x_hat = (*states)[states->size()-1];
+    for (size_t t = 0; t < sv_y.size(); t++) {
+        cout << sv_x[t] << ", " << x_hat->at(t).first << endl;
+    }
+}
+
 int main()
 {
     long seed = 123;
     //test_smc(seed);
     //test_spf(seed);
-    test_csmc(seed);
+    //test_csmc(seed);
 
 //    seed = 532;
 //    unsigned int T = 100;
 //    test_resampling_schemes(seed, T);
 
-    //test_pmcmc(seed);
+    //test_pmmh(seed);
+    test_pg(seed);
     return 0;
 }

@@ -16,7 +16,7 @@
 
 #include "numerical_utils.hpp"
 #include "particle_population.hpp"
-#include "param_proposal.hpp"
+#include "pmmh_proposal.hpp"
 #include "pmcmc_options.hpp"
 #include "resampling.hpp"
 #include "smc.hpp"
@@ -30,17 +30,17 @@ template <class S, class P> class ParticleMMH
 {
     PMCMCOptions *options;
     SMC<S, P> *smc;
-    ParamProposal<P> *param_proposal;
+    PMMHProposal<P> *param_proposal;
     vector<P*> *parameters;
     vector<S*> *states;
 public:
-    ParticleMMH(PMCMCOptions *options, SMC<S, P> *smc, ParamProposal<P> *param_proposal);
+    ParticleMMH(PMCMCOptions *options, SMC<S, P> *smc, PMMHProposal<P> *param_proposal);
     void run();
     vector<P*> *get_parameters();
 };
 
 template <class S, class P>
-ParticleMMH<S,P>::ParticleMMH(PMCMCOptions *options, SMC<S, P> *smc, ParamProposal<P> *param_proposal)
+ParticleMMH<S,P>::ParticleMMH(PMCMCOptions *options, SMC<S, P> *smc, PMMHProposal<P> *param_proposal)
 {
     this->options = options;
     this->smc = smc;

@@ -10,10 +10,10 @@
 
 #include <stdio.h>
 
-#include "param_proposal.hpp"
+#include "pmmh_proposal.hpp"
 #include "sv_model_params.hpp"
 
-class SVModelParamProposal : public ParamProposal<SVModelParams>
+class SVModelRandomWalkProposal : public PMMHProposal<SVModelParams>
 {
 public:
     SVModelParams *sample_from_prior(gsl_rng *random);
