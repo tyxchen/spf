@@ -9,3 +9,4 @@ addons:
       - cmake
       - gsl
       - boost
+script: cmake
