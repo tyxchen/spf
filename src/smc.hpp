@@ -80,9 +80,9 @@ void SMC<S,P>::run_smc(P &params)
             break;
         }
 
-        if (options->essThreshold == 0.0) // no resampling (essneitally SIS)
+        if (options->ess_threshold == 0.0) // no resampling (essneitally SIS)
             continue;
-        if (options->essThreshold >= 1.0 || curr_pop->get_ess() <= options->essThreshold) {
+        if (options->ess_threshold >= 1.0 || curr_pop->get_ess() <= options->ess_threshold) {
             // resample
             curr_pop = resample(random, options->resampling_scheme, curr_pop, options->num_particles);
             delete (*populations)[r]; // delete pre-resampling population

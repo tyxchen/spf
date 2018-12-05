@@ -14,10 +14,9 @@
 #include "sampling_utils.hpp"
 #include "smc_model.hpp"
 
-DiscreteHMM::DiscreteHMM(size_t num_states, vector<int> &obs)
+DiscreteHMM::DiscreteHMM(vector<int> &obs)
 {
     this->obs = obs;
-	this->num_states = num_states;
 	// TODO: check dimensionality of mu and P
 }
 

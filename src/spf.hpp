@@ -99,7 +99,7 @@ CompactParticlePopulation<S> SPF<S,P>::propose_compact_population(PermutationStr
     gsl_rng *random = stream.get_random();
     while (compact_pop.get_num_particles() < options->num_particles ||
             (compact_pop.get_num_particles() < options->max_virtual_particles &&
-             compact_pop.ess()/options->num_particles < options->essThreshold))
+             compact_pop.ess()/options->num_particles < options->ess_threshold))
     {
         idx = stream.pop();
         if (pop == 0) {

@@ -21,10 +21,10 @@ public:
         SYSTEMATIC = 2
     };
     ResamplingScheme resampling_scheme = MULTINOMIAL;
-    double essThreshold = 0.5;
+    double ess_threshold = 0.5;
     bool track_population = false;
     bool resample_last_round = false;
-    bool useSPF = false;
+    bool use_sPF = false;
     bool debug = false;
 
     long main_seed = 1;
