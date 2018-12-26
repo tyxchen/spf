@@ -109,6 +109,22 @@ void multinomial(const gsl_rng *random, unsigned int N, vector<double> normalize
     gsl_ran_multinomial(random, N, N, probs, result);
 }
 
+int multinomial(const gsl_rng *random, vector<double> unnormalized_probs, double norm)
+{
+    double u = gsl_rng_uniform(random);
+    double sum = 0.0;
+    for (int i = 0; i < unnormalized_probs.size(); i++)
+    {
+        sum += (unnormalized_probs[i] / norm);
+        if (u <= sum) {
+            return i;
+        }
+    }
+    
+    // probs does not sum to 1: check this and handle the error
+    return -1;
+}
+
 void multinomial_sample_indices(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *indices)
 {
     // draw N uniform values

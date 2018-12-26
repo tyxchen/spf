@@ -61,7 +61,7 @@ Note: `init()` function generates random object for the seed provided to the opt
 Assuming that the parameters are known, we can infer the latent states using `SMC`. It offers features to get log marginal likelihood estimate in addition to retrieving the particle population at each iteration of the SMC.
 ```cpp
 DiscreteHMMParams
-ProblemSpecification<int, DiscreteHMMParams> *smc_model = new DiscreteHMM(num_latent_states, y);
+ProblemSpecification<int, lDiscreteHMMParams> *smc_model = new DiscreteHMM(num_latent_states, y);
 SMC<int, DiscreteHMMParams> smc(smc_model, smc_options);
 smc.run_smc(params);
 double log_marginal = smc.get_log_marginal_likelihood();

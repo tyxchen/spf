@@ -25,7 +25,7 @@ public:
 	DiscreteHMM(vector<int> &obs);
     unsigned long num_iterations();
     std::pair<int, double> propose_initial(gsl_rng *random, DiscreteHMMParams &params);
-    std::pair<int, double> propose_next(gsl_rng *random, int t, int curr, DiscreteHMMParams &params);
+    std::pair<int, double> propose_next(gsl_rng *random, int t, int &curr, DiscreteHMMParams &params);
 
     static int initial(gsl_rng *random, DiscreteHMMParams &params);
     static int forward(gsl_rng *random, int curr, DiscreteHMMParams &params);

@@ -32,6 +32,7 @@ unsigned int multinomial(const gsl_rng *random, vector<double> normalized_probs)
 
 // ASSERT: the length of result is same as normalized_probs
 void multinomial(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *result);
+int multinomial(const gsl_rng *random, vector<double> unnormalized_probs, double norm);
 
 // ASSERT: the length of indices is N
 // each element of indices taking on values {0, ..., normalized_probs.size()}

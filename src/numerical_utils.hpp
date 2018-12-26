@@ -29,6 +29,9 @@ double log_add(double x, double y);
 double log_add(double *x, int size);
 double log_add(vector<double> x);
 
+void add(double *x, double c, size_t size);
+void multiply(double *x, double c, double *ret, size_t size);
+
 template <typename T>
 void print_vector(const vector<T> &v)
 {

@@ -151,5 +151,20 @@ double log_add(double *x, int size)
 
 }
 
+void add(double *x, double c, size_t size)
+{
+    for (size_t s = 0; s < size; s++)
+    {
+        x[s] += c;
+    }
+}
+
+void multiply(double *x, double c, double *ret, size_t size)
+{
+    for (size_t s = 0; s < size; s++)
+    {
+        ret[s] = x[s] * c;
+    }
+}
 
 

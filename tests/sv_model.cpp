@@ -28,7 +28,7 @@ std::pair<double, double> SVModel::propose_initial(gsl_rng *random, SVModelParam
     return make_pair(x1, obs_log_lik);
 }
 
-std::pair<double, double> SVModel::propose_next(gsl_rng *random, int t, double curr, SVModelParams &params)
+std::pair<double, double> SVModel::propose_next(gsl_rng *random, int t, double &curr, SVModelParams &params)
 {
     double xt = params.phi * curr + gsl_ran_gaussian(random, params.sigma);
     double obs_log_lik = log(gsl_ran_gaussian_pdf(obs[t], sqrt(exp(xt)) * params.beta));

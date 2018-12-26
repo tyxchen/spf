@@ -33,7 +33,7 @@ std::pair<int, double> DiscreteHMM::propose_initial(gsl_rng *random, DiscreteHMM
     return make_pair(state, logw);
 }
 
-std::pair<int, double> DiscreteHMM::propose_next(gsl_rng *random, int t, int curr, DiscreteHMMParams &params)
+std::pair<int, double> DiscreteHMM::propose_next(gsl_rng *random, int t, int &curr, DiscreteHMMParams &params)
 {
 	// sample from multinomial distribution parameterized by mu
 	int state = multinomial(random, params.transition_probs[curr]);
