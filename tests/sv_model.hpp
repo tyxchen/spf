@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <vector>
 
+#include "particle.hpp"
 #include "smc_model.hpp"
 #include "sv_model_params.hpp"
 
@@ -26,8 +27,8 @@ class SVModel : public ProblemSpecification<double, SVModelParams>
 public:
     SVModel(vector<double> &obs);
     unsigned long num_iterations();
-    std::pair<double, double> propose_initial(gsl_rng *random, SVModelParams &params);
-    std::pair<double, double> propose_next(gsl_rng *random, int t, double &curr, SVModelParams &params);
+    Particle<double> *propose_initial(gsl_rng *random, SVModelParams &params);
+    Particle<double> *propose_next(gsl_rng *random, int t, double &curr, SVModelParams &params);
     static void generate_data(gsl_rng *random, size_t T, SVModelParams &params, vector<double> &latent, vector<double> &obs);
     ~SVModel();
 };

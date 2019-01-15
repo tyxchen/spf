@@ -25,18 +25,20 @@ class ParticlePopulation
     double sum_weights;
     double sum_weights_squared;
     double log_norm = NaN;
+    double log_Z_ratio = NaN;
     bool resampled = false;
 
 public:
     ParticlePopulation(vector<P> *particles);
     ParticlePopulation(vector<P> *particles, vector<double> *log_weights);
-    ParticlePopulation(vector<P> *particles, vector<double> *log_weights, double log_norm);
+    ParticlePopulation(vector<P> *particles, vector<double> *log_weights, double log_norm, double log_Z_ratio);
     //ParticlePopulation(vector<P> *particles, vector<double> *log_weights, vector<double> *normalized_weights);
     inline vector<double> *get_log_weights() { return log_weights; }
     inline vector<P> *get_particles() { return particles; }
     vector<double> *get_normalized_weights();
     double get_ess();
     double get_log_norm();
+    double get_log_Z_ratio();
     bool is_resampled();
     static ParticlePopulation<P>* construct_equally_weighted_population(int num_particles);
     static ParticlePopulation<P>* construct_equally_weighted_population(vector<P> *particles);
@@ -52,10 +54,11 @@ ParticlePopulation<P>::ParticlePopulation(vector<P> *particles, vector<double> *
 }
 
 template <class P>
-ParticlePopulation<P>::ParticlePopulation(vector<P> *particles, vector<double> *log_weights, double log_norm) :
+ParticlePopulation<P>::ParticlePopulation(vector<P> *particles, vector<double> *log_weights, double log_norm, double log_Z_ratio) :
 ParticlePopulation(particles, log_weights)
 {
     this->log_norm = log_norm;
+    this->log_Z_ratio = log_Z_ratio;
 }
 
 template <class P>
@@ -104,6 +107,12 @@ double ParticlePopulation<P>::get_log_norm()
         get_ess();
     }
     return log_norm;
+}
+
+template <class P>
+double ParticlePopulation<P>::get_log_Z_ratio()
+{
+    return log_Z_ratio;
 }
 
 template <class P>

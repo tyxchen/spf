@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "discrete_hmm_params.hpp"
+#include "particle.hpp"
 #include "smc_model.hpp"
 
 using namespace std;
@@ -24,8 +25,8 @@ class DiscreteHMM : public ProblemSpecification<int, DiscreteHMMParams>
 public:
 	DiscreteHMM(vector<int> &obs);
     unsigned long num_iterations();
-    std::pair<int, double> propose_initial(gsl_rng *random, DiscreteHMMParams &params);
-    std::pair<int, double> propose_next(gsl_rng *random, int t, int &curr, DiscreteHMMParams &params);
+    Particle<int> *propose_initial(gsl_rng *random, DiscreteHMMParams &params);
+    Particle<int> *propose_next(gsl_rng *random, int t, int &curr, DiscreteHMMParams &params);
 
     static int initial(gsl_rng *random, DiscreteHMMParams &params);
     static int forward(gsl_rng *random, int curr, DiscreteHMMParams &params);

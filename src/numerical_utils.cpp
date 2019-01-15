@@ -78,13 +78,13 @@ double normalize_destructively(double *log_weights, int size)
 
 double log_add(double x, double y)
 {
-	// make a the max
+	// make x the max
 	if (y > x) {
 		double temp = x;
 		x = y;
 		y = temp;
 	}
-	// now a is bigger
+	// now x is bigger
 	if (x == DOUBLE_NEG_INF) {
 		return x;
 	}

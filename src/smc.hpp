@@ -108,7 +108,7 @@ pair<double, ParticlePopulation<S>*> SMC<S,P>::propose(gsl_rng *random, Particle
     vector<double> *new_log_weights = new vector<double>(num_proposals);
 
     double log_norm = DOUBLE_NEG_INF;
-    std::pair<S, double> ret;
+    Particle<S> *ret;
     double log_N = log(num_proposals);
     for (int n = 0; n < num_proposals; n++)
     {
@@ -117,17 +117,18 @@ pair<double, ParticlePopulation<S>*> SMC<S,P>::propose(gsl_rng *random, Particle
         } else {
             ret = proposal->propose_next(random, iter, (*curr_particles)[n], params);
         }
-        (*new_particles)[n] = ret.first;
+        (*new_particles)[n] = *ret->get_state();
+        double log_alpha = ret->get_log_alpha();
         if (is_resampled) {
-            (*new_log_weights)[n] = ret.second + log_N;
+            (*new_log_weights)[n] = log_alpha - log_N;
         } else {
-            (*new_log_weights)[n] = ret.second + (*curr_log_weights)[n];
+            (*new_log_weights)[n] = log_alpha + (*curr_log_weights)[n];
         }
-        log_norm = log_add(log_norm, (*new_log_weights)[n]);
-        log_Z_ratio = log_add(log_Z_ratio, ret.second);
+        log_norm = log_add(log_norm, log_alpha);
+        log_Z_ratio = log_add(log_Z_ratio, log_alpha);
     }
     log_Z_ratio -= log(num_proposals);
-    ParticlePopulation<S> *new_pop = new ParticlePopulation<S>(new_particles, new_log_weights, log_norm);
+    ParticlePopulation<S> *new_pop = new ParticlePopulation<S>(new_particles, new_log_weights, log_norm, log_Z_ratio);
     return make_pair(log_Z_ratio, new_pop);
 }
 

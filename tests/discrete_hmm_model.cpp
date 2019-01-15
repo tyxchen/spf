@@ -25,20 +25,20 @@ unsigned long DiscreteHMM::num_iterations()
 	return obs.size();
 }
 
-std::pair<int, double> DiscreteHMM::propose_initial(gsl_rng *random, DiscreteHMMParams &params)
+Particle<int> *DiscreteHMM::propose_initial(gsl_rng *random, DiscreteHMMParams &params)
 {
 	// sample from multinomial distribution parameterized by mu
 	int state = multinomial(random, params.initial_distn);
     double logw = log(params.emission_probs[state][obs[0]]);
-    return make_pair(state, logw);
+    return make_particle(&state, logw);
 }
 
-std::pair<int, double> DiscreteHMM::propose_next(gsl_rng *random, int t, int &curr, DiscreteHMMParams &params)
+Particle<int> *DiscreteHMM::propose_next(gsl_rng *random, int t, int &curr, DiscreteHMMParams &params)
 {
 	// sample from multinomial distribution parameterized by mu
 	int state = multinomial(random, params.transition_probs[curr]);
     double logw = log(params.emission_probs[state][obs[t]]);
-	return make_pair(state, logw);
+	return make_particle(&state, logw);
 }
 
 int DiscreteHMM::initial(gsl_rng *random, DiscreteHMMParams &params)
