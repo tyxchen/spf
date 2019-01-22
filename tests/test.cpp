@@ -367,7 +367,7 @@ bool test_smc_sampler(long seed)
 
     // if num_iter = t, it will run for (t+1) iterations, the target for the first iteration will be the prior
     // the target for the second iteration and on will be tempered likelihod * prior
-    size_t num_iter = 20;
+    size_t num_iter = 100;
     auto *smc = new SMC<NormalNormalState, NormalNormalHyperParams>(new NormalNormalModel(num_iter, 10, data, sigma), options);
     smc->run_smc(hp);
     double smc_log_marginal = smc->get_log_marginal_likelihood();
