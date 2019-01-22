@@ -41,7 +41,7 @@ std::pair<NormalNormalState, double> *NormalNormalModel::propose_initial(gsl_rng
 
 std::pair<NormalNormalState, double> *NormalNormalModel::propose_next(gsl_rng *random, int t, NormalNormalState curr, NormalNormalHyperParams &params)
 {
-    double prev_mu = curr.get_mu(); // save the previous value
+    double prev_mu = curr.get_mu(); // save its value
     for (size_t i = 0; i < num_mh_iter; i++) {
         double mu_star = gsl_ran_gaussian(random, 0.7) + curr.get_mu();
         double log_lik_new = compute_log_lik(mu_star, sigma);
