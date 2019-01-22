@@ -23,6 +23,7 @@
 #include "csmc.hpp"
 #include "discrete_hmm_model.hpp"
 #include "discrete_hmm_params.hpp"
+#include "normal_normal_model.hpp"
 #include "numerical_utils.hpp"
 #include "pg.hpp"
 #include "pmmh.hpp"
@@ -320,6 +321,64 @@ bool test_spf(long seed)
     return true;
 }
 
+bool test_smc_sampler(long seed)
+{
+    gsl_rng *random = generate_random_object(seed+3);
+
+    cout << "=====Testing SMC Sampler=====" << endl;
+    
+    // generate data and compute exact marginal likelihood
+    double mu_0 = 2.1;
+    double sigma_0 = 1.3;
+    double true_mu = gsl_ran_gaussian(random, sigma_0) + mu_0;
+    cout << "True mu: " << true_mu << endl;
+    double sigma = 1.1;
+
+    // generate data
+    size_t num_data = 2;
+    vector<double> data;
+    double data_log_lik = 0.0;
+    double sum_data = 0.0;
+    for (size_t n = 0; n < num_data; n++) {
+        data.push_back(gsl_ran_gaussian(random, sigma) + true_mu);
+        data_log_lik += log(gsl_ran_gaussian_pdf(data[n] - true_mu, sigma));
+        sum_data += data[n];
+    }
+    double log_prior = log(gsl_ran_gaussian_pdf(true_mu - mu_0, sigma_0));
+
+    double var_0 = pow(sigma_0, 2);
+    double var = pow(sigma, 2);
+    double posterior_mu = 1/(1/var_0 + num_data/var);
+    posterior_mu *= ((mu_0/var_0) + (sum_data/var));
+    double posterior_var = 1./((1/var_0) + (num_data/var));
+    double log_posterior = log(gsl_ran_gaussian_pdf(true_mu - posterior_mu, sqrt(posterior_var)));
+
+    double exact_log_marginal = data_log_lik + log_prior - log_posterior;
+    cout << "Exact log marginal: " << exact_log_marginal << endl;
+
+    // run SMC and estimate the marginal likelihood
+    SMCOptions *options = new SMCOptions();
+    options->main_seed = gsl_rng_get(random);
+    options->ess_threshold = 1.0;
+    options->num_particles = 10000;
+    options->resample_last_round = true;
+
+    NormalNormalHyperParams hp(mu_0, sigma_0);
+
+    // if num_iter = t, it will run for (t+1) iterations, the target for the first iteration will be the prior
+    // the target for the second iteration and on will be tempered likelihod * prior
+    size_t num_iter = 20;
+    auto *smc = new SMC<NormalNormalState, NormalNormalHyperParams>(new NormalNormalModel(num_iter, 10, data, sigma), options);
+    smc->run_smc(hp);
+    double smc_log_marginal = smc->get_log_marginal_likelihood();
+    cout << "SMC sampler estimate: " << smc_log_marginal << endl;
+    if (abs(exp(exact_log_marginal) - exp(smc_log_marginal)) > ERR_TOL) {
+        cerr << "SMC sampler test failed!" << endl;
+        return false;
+    }
+    return true;
+}
+
 void test_resampling_schemes(long seed, unsigned int T)
 {
     vector<SMCOptions::ResamplingScheme> resampling_schemes;
@@ -458,6 +517,8 @@ int main()
     if (!test_spf(seed))
         return -1;
     if (!test_csmc(seed))
+        return -1;
+    if (!test_smc_sampler(seed))
         return -1;
 
     //test_pmmh(seed);

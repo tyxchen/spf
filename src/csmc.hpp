@@ -107,7 +107,7 @@ vector<pair<S, double>> *ConditionalSMC<S,P>::run_csmc(P &params, vector<pair<S,
 template <class S, class P>
 double ConditionalSMC<S,P>::propose(gsl_rng *random, P &params, unsigned int r, unsigned int N)
 {
-    Particle<S> *ret_val;
+    pair<S, double> *ret_val;
     unsigned int parent_idx = 0;
     double log_norm = DOUBLE_NEG_INF;
 
@@ -120,9 +120,9 @@ double ConditionalSMC<S,P>::propose(gsl_rng *random, P &params, unsigned int r, 
             parent_idx = (*ancestors[r-1])[k];
             ret_val = proposal->propose_next(random, r, (*particles[r-1])[parent_idx], params);
         }
-        (*particles[r])[k] = *ret_val->get_state();
-        (*log_weights[r])[k] = ret_val->get_log_alpha();
-        log_norm = log_add(log_norm, ret_val->get_log_alpha());
+        (*particles[r])[k] = ret_val->first;
+        (*log_weights[r])[k] = ret_val->second;
+        log_norm = log_add(log_norm, ret_val->second);
     }
 
     return log_norm;

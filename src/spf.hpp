@@ -90,7 +90,7 @@ CompactParticlePopulation<S> SPF<S,P>::propose_compact_population(PermutationStr
 {
     unsigned int idx = 0;
     CompactParticlePopulation<S> compact_pop;
-    Particle<S> *ret;
+    pair<int, double> *ret;
 
     vector<S> *curr_particles = 0;
     if (pop != 0) {
@@ -107,7 +107,7 @@ CompactParticlePopulation<S> SPF<S,P>::propose_compact_population(PermutationStr
         } else {
             ret = proposal->propose_next(random, iter, (*curr_particles)[idx], params);
         }
-        compact_pop.add_weight(ret->get_log_alpha());
+        compact_pop.add_weight(ret->second);
     }
 
     return compact_pop;
@@ -122,7 +122,7 @@ ParticlePopulation<S> *SPF<S,P>::contraction(PermutationStream &stream, Particle
     unsigned int idx = 0;
     double normalized_partial_sum = 0.0;
     double *sorted_uniform = new double[N];
-    Particle<S> *ret;
+    pair<S, double> *ret;
     double log_norm = compact_pop.get_log_sum_weights();
     
     vector<S> *new_particles = new vector<S>(N);
@@ -158,10 +158,10 @@ ParticlePopulation<S> *SPF<S,P>::contraction(PermutationStream &stream, Particle
             } else {
                 ret = proposal->propose_next(random, iter, (*curr_particles)[idx], params);
             }
-            normalized_partial_sum += exp(ret->get_log_alpha() - log_norm);
-            sanity_check.add_weight(ret->get_log_alpha());
+            normalized_partial_sum += exp(ret->second - log_norm);
+            sanity_check.add_weight(ret->second);
         }
-        (*new_particles)[n] = *ret->get_state();
+        (*new_particles)[n] = ret->first;
         //(*new_log_weights)[n] = log_weight;
     }
     
@@ -173,7 +173,7 @@ ParticlePopulation<S> *SPF<S,P>::contraction(PermutationStream &stream, Particle
         } else {
             ret = proposal->propose_next(random, iter, (*curr_particles)[idx], params);
         }
-        sanity_check.add_weight(ret->get_log_alpha());
+        sanity_check.add_weight(ret->second);
     }
 
     if (options->debug) {
