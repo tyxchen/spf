@@ -31,7 +31,7 @@ template <class S, class P> class ParticleGibbs
     ConditionalSMC<S, P> *csmc;
     PGProposal<S, P> *param_proposal;
     vector<P*> *parameters;
-    vector<vector<pair<S, double>> *> *states; // store the genealogy along with the log weights
+    vector<ParticleGenealogy<S> *> *states; // store the genealogy along with the log weights
 
 public:
     ParticleGibbs(PMCMCOptions *options, ConditionalSMC<S, P> *smc, PGProposal<S, P> *param_proposal);
@@ -47,7 +47,7 @@ ParticleGibbs<S,P>::ParticleGibbs(PMCMCOptions *options, ConditionalSMC<S, P> *c
     this->csmc = csmc;
     this->param_proposal = param_proposal;
     this->parameters = new vector<P*>();
-    this->states = new vector<vector<pair<S, double>> *>();
+    this->states = new vector<ParticleGenealogy<S> *>();
 }
 
 template <class S, class P>
@@ -56,7 +56,7 @@ void ParticleGibbs<S,P>::run()
     // initialize the parameters
     P *param = param_proposal->sample_from_prior(options->random);
     // initialize state
-    vector<pair<S, double>> *genealogy = csmc->initialize(*param);
+    ParticleGenealogy<S> *genealogy = csmc->initialize(*param);
 
     double log_Z = csmc->get_log_marginal_likelihood();
     double max_log_z = DOUBLE_NEG_INF;

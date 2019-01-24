@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "numerical_utils.hpp"
+#include "particle_genealogy.hpp"
 #include "resampling.hpp"
 #include "sampling_utils.hpp"
 #include "smc_model.hpp"
@@ -23,9 +24,9 @@ class ConditionalSMC
     ProblemSpecification<S, P> *proposal;
 
     double log_marginal_likelihood = 0;
-    double propose(gsl_rng *random, P &params, unsigned int r, unsigned int N);
+    double propose(gsl_rng *random, P &params, unsigned int r, ParticleGenealogy<S> *genealogy);
     void resample(gsl_rng *random, unsigned int r, bool fix_last_genealogy, double log_norm);
-    vector<pair<S, double>> *sample_genealogy(const gsl_rng *random);
+    ParticleGenealogy<S> *sample_genealogy(const gsl_rng *random);
     double compute_ess(vector<double> &probs);
 
     // store the particles and ancestor indices in a vector
@@ -36,8 +37,8 @@ class ConditionalSMC
 
 public:
     ConditionalSMC(ProblemSpecification<S, P> *proposal, SMCOptions *options);
-    vector<pair<S, double>> *initialize(P &params);
-    vector<pair<S, double>> *run_csmc(P &params, vector<pair<S, double>> *genealogy); // returns the genealogy as pair of sample and its log weight
+    ParticleGenealogy<S> *initialize(P &params);
+    ParticleGenealogy<S> *run_csmc(P &params, ParticleGenealogy<S> *genealogy);
     double get_log_marginal_likelihood();
     inline double get_log_norm(unsigned int r) { return (*log_norms)[r]; }
     inline vector<S> *get_particles(unsigned int r) { return particles[r]; }
@@ -64,35 +65,21 @@ ConditionalSMC<S,P>::ConditionalSMC(ProblemSpecification<S, P> *proposal, SMCOpt
 }
 
 template <class S, class P>
-vector<pair<S, double>> *ConditionalSMC<S,P>::initialize(P &params)
+ParticleGenealogy<S> *ConditionalSMC<S,P>::initialize(P &params)
 {
     return run_csmc(params, 0);
 }
 
 template <class S, class P>
-vector<pair<S, double>> *ConditionalSMC<S,P>::run_csmc(P &params, vector<pair<S, double>> *genealogy)
+ParticleGenealogy<S> *ConditionalSMC<S,P>::run_csmc(P &params, ParticleGenealogy<S> *genealogy)
 {
-    unsigned int N = options->num_particles;
     size_t R = proposal->num_iterations();
     log_marginal_likelihood = 0;
     double log_norm = 0.0;
-    double log_N = log(N);
+    double log_N = log(options->num_particles);
     for (unsigned int r = 0; r < R; r++)
     {
-        if (genealogy != 0) {
-            log_norm = propose(options->main_random, params, r, N-1);
-
-            // the last particle will always be fixed by the genealogy
-            (*particles[r])[N-1] = (*genealogy)[r].first;
-            (*log_weights[r])[N-1] = (*genealogy)[r].second;
-            log_norm = log_add(log_norm, (*genealogy)[r].second);
-
-            // resample ancestor indices
-        } else {
-            // no genealogy is provided, therefore, simply do bootstrap PF
-            log_norm = propose(options->main_random, params, r, N);
-        }
-        
+        log_norm = propose(options->main_random, params, r, genealogy);
         (*log_norms)[r] = log_norm;
         log_marginal_likelihood += (log_norm - log_N);
         
@@ -105,13 +92,15 @@ vector<pair<S, double>> *ConditionalSMC<S,P>::run_csmc(P &params, vector<pair<S,
 }
 
 template <class S, class P>
-double ConditionalSMC<S,P>::propose(gsl_rng *random, P &params, unsigned int r, unsigned int N)
+double ConditionalSMC<S,P>::propose(gsl_rng *random, P &params, unsigned int r, ParticleGenealogy<S> *genealogy)
 {
     pair<S, double> *ret_val;
+    unsigned int N = genealogy == 0 ? options->num_particles : options->num_particles - 1;
     unsigned int parent_idx = 0;
     double log_norm = DOUBLE_NEG_INF;
 
-    // propose N times
+    vector<S> *samples = new vector<S>();
+    vector<double> *logw = new vector<double>();
     for (size_t k = 0; k < N; k++)
     {
         if (r == 0) {
@@ -120,10 +109,23 @@ double ConditionalSMC<S,P>::propose(gsl_rng *random, P &params, unsigned int r, 
             parent_idx = (*ancestors[r-1])[k];
             ret_val = proposal->propose_next(random, r, (*particles[r-1])[parent_idx], params);
         }
-        (*particles[r])[k] = ret_val->first;
-        (*log_weights[r])[k] = ret_val->second;
+        samples->push_back(ret_val->first);
+        logw->push_back(ret_val->second);
         log_norm = log_add(log_norm, ret_val->second);
     }
+    if (genealogy != 0) {
+        // the last particle to be fixed by the given genealogy
+        samples->push_back(genealogy->at(r)->first);
+        logw->push_back(genealogy->at(r)->second);
+        log_norm = log_add(log_norm, genealogy->at(r)->second);
+    }
+    
+    // delete previous particles and log weights
+    delete particles[r];
+    delete log_weights[r];
+    
+    particles[r] = samples;
+    log_weights[r] = logw;
 
     return log_norm;
 }
@@ -144,6 +146,8 @@ void ConditionalSMC<S,P>::resample(gsl_rng *random, unsigned int r, bool fix_las
     } else {
         num_resamples = N;
     }
+    
+    // TODO: instead of using indices, pass in ancestors[r] directly?
     unsigned int *indices = new unsigned int[num_resamples];
     multinomial_resampling(random, &probs, num_resamples, indices);
 
@@ -160,10 +164,10 @@ void ConditionalSMC<S,P>::resample(gsl_rng *random, unsigned int r, bool fix_las
 }
 
 template <class S, class P>
-vector<pair<S, double>> *ConditionalSMC<S,P>::sample_genealogy(const gsl_rng *random)
+ParticleGenealogy<S> *ConditionalSMC<S,P>::sample_genealogy(const gsl_rng *random)
 {
     size_t R = proposal->num_iterations();
-    vector<pair<S, double>> *genealogy = new vector<pair<S, double>>(R);
+    ParticleGenealogy<S> *genealogy = new ParticleGenealogy<S>(R);
 
     size_t N = options->num_particles;
 
@@ -176,8 +180,8 @@ vector<pair<S, double>> *ConditionalSMC<S,P>::sample_genealogy(const gsl_rng *ra
         size_t curr_iter = R - r - 1;
         S particle = (*particles[curr_iter])[idx];
         double log_w = (*log_weights[curr_iter])[idx];
-        (*genealogy)[curr_iter] = make_pair(particle, log_w);
-
+        auto *ret = new pair<S, double>(particle, log_w);
+        genealogy->set(curr_iter, ret);
         if (curr_iter > 0) {
             idx = (*ancestors[curr_iter-1])[idx];
         }

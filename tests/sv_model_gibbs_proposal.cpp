@@ -30,13 +30,13 @@ SVModelParams *SVModelGibbsProposal::sample_from_prior(gsl_rng *random)
     return param;
 }
 
-SVModelParams *SVModelGibbsProposal::propose(gsl_rng *random, SVModelParams *curr, vector<pair<double, double>> *genealogy)
+SVModelParams *SVModelGibbsProposal::propose(gsl_rng *random, SVModelParams *curr, ParticleGenealogy<double> *genealogy)
 {
     // sample from posterior distribution:
     size_t T = genealogy->size();
     double sum = 0.0;
     for (size_t t = 0; t < T; t++) {
-        double x_t = genealogy->at(t).first;
+        double x_t = genealogy->at(t)->first;
         double y_t = y[t];
         sum += pow(y_t, 2.0)*exp(-x_t);
     }

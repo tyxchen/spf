@@ -10,12 +10,14 @@
 
 #include <gsl/gsl_rng.h>
 
+#include "particle_genealogy.hpp"
+
 template <class S, class P>
 class PGProposal
 {
 public:
     virtual P *sample_from_prior(gsl_rng *random) = 0;
-    virtual P *propose(gsl_rng *random, P *curr, vector<pair<S, double>> *genealogy) = 0;
+    virtual P *propose(gsl_rng *random, P *curr, ParticleGenealogy<S> *genealogy) = 0;
     virtual double log_prior(P *curr) = 0; // log p(curr)
 };
 

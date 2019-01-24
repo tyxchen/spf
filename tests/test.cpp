@@ -220,12 +220,12 @@ bool test_csmc(long seed)
     options->main_seed = seed;
     options->resampling_seed = seed+123;
     options->ess_threshold = 1;
-    options->num_particles = 1000;
+    options->num_particles = 10000;
 
     ConditionalSMC<int, DiscreteHMMParams> csmc(new DiscreteHMM(y), options);
-    vector<pair<int, double>> *genealogy = csmc.initialize(true_params);
+    ParticleGenealogy<int> *genealogy = csmc.initialize(true_params);
     double logZ = csmc.get_log_marginal_likelihood();
-    for (size_t num_iter = 0; num_iter < 100; num_iter++) {
+    for (size_t num_iter = 0; num_iter < 20; num_iter++) {
         genealogy = csmc.run_csmc(true_params, genealogy);
         logZ = csmc.get_log_marginal_likelihood();
         //cout << logZ << endl;

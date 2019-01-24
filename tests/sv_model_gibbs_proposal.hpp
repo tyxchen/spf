@@ -21,7 +21,7 @@ class SVModelGibbsProposal : public PGProposal<double, SVModelParams>
     double a, b;
 public:
     SVModelParams *sample_from_prior(gsl_rng *random);
-    SVModelParams *propose(gsl_rng *random, SVModelParams *curr, vector<pair<double, double>> *genealogy);
+    SVModelParams *propose(gsl_rng *random, SVModelParams *curr, ParticleGenealogy<double> *genealogy);
     double log_prior(SVModelParams *curr); // log p(curr)
     
     SVModelGibbsProposal(double a, double b, vector<double> &y);
