@@ -36,7 +36,7 @@ SVModelParams *SVModelGibbsProposal::propose(gsl_rng *random, SVModelParams *cur
     size_t T = genealogy->size();
     double sum = 0.0;
     for (size_t t = 0; t < T; t++) {
-        double x_t = genealogy->at(t)->first;
+        const double &x_t = genealogy->get_state_at(t);
         double y_t = y[t];
         sum += pow(y_t, 2.0)*exp(-x_t);
     }

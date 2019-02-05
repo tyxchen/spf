@@ -15,11 +15,12 @@
 #include <gsl/gsl_rng.h>
 
 #include "numerical_utils.hpp"
+#include "particle_genealogy.hpp"
 #include "particle_population.hpp"
 #include "pmmh_proposal.hpp"
 #include "pmcmc_options.hpp"
 #include "resampling.hpp"
-#include "smc.hpp"
+#include "csmc.hpp"
 #include "smc_model.hpp"
 #include "smc_options.hpp"
 #include "sampling_utils.hpp"
@@ -29,24 +30,24 @@ using namespace std;
 template <class S, class P> class ParticleMMH
 {
     PMCMCOptions *options;
-    SMC<S, P> *smc;
+    ConditionalSMC<S, P> *smc;
     PMMHProposal<P> *param_proposal;
     vector<P*> *parameters;
-    vector<S*> *states;
+    vector<ParticleGenealogy<S> *> *states;
 public:
-    ParticleMMH(PMCMCOptions *options, SMC<S, P> *smc, PMMHProposal<P> *param_proposal);
+    ParticleMMH(PMCMCOptions *options, ConditionalSMC<S, P> *smc, PMMHProposal<P> *param_proposal);
     void run();
     vector<P*> *get_parameters();
 };
 
 template <class S, class P>
-ParticleMMH<S,P>::ParticleMMH(PMCMCOptions *options, SMC<S, P> *smc, PMMHProposal<P> *param_proposal)
+ParticleMMH<S,P>::ParticleMMH(PMCMCOptions *options, ConditionalSMC<S, P> *smc, PMMHProposal<P> *param_proposal)
 {
     this->options = options;
     this->smc = smc;
     this->param_proposal = param_proposal;
     this->parameters = new vector<P*>();
-    this->states = new vector<S*>();
+    this->states = new vector<ParticleGenealogy<S> *>();
 }
 
 template <class S, class P>
@@ -55,14 +56,12 @@ void ParticleMMH<S,P>::run()
     // initialize the parameters
     P *param_curr = param_proposal->sample_from_prior(options->random);
     P *param_new = 0;
-    
-    S *curr_state = 0;
-    S *new_state = 0;
-    
+
+    ParticleGenealogy<S> *new_state = 0;
+
     // initialize
-    smc->run_smc(*param_curr);
-    curr_state = smc->sample(options->random);
-    
+    ParticleGenealogy<S> *curr_state = smc->run_csmc(*param_curr, 0);
+
     double log_Z_old = smc->get_log_marginal_likelihood();
     double log_Z_curr = 0;
     double log_accept_ratio = 0.0;
@@ -90,8 +89,7 @@ void ParticleMMH<S,P>::run()
         }
 
         // run SMC
-        smc->run_smc(*param_new);
-        new_state = smc->sample(options->random);
+        new_state = smc->run_csmc(*param_new, 0);
         log_Z_curr = smc->get_log_marginal_likelihood();
 
         // compute the acceptance probability

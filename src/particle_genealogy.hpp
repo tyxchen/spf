@@ -15,32 +15,52 @@ using namespace std;
 template <class S>
 class ParticleGenealogy
 {
-    size_t len;
-    vector<pair<S, double> *> *genealogy = 0;
+    vector<shared_ptr<S>> state_genealogy;
+    vector<double> log_weights_genealogy;
 public:
-    ParticleGenealogy(size_t len);
-    pair<S, double> *at(size_t r);
-    void set(size_t r, pair<S, double> *ret);
-    inline size_t size() { return len; }
+    ParticleGenealogy();
+    size_t size();
+    void set(shared_ptr<S> state, double log_w);
+    const S &get_state_at(size_t r);
+    double get_log_weight_at(size_t r);
+    shared_ptr<S> get_state_ptr_at(size_t r);
 };
 
 template <class S>
-ParticleGenealogy<S>::ParticleGenealogy(size_t len) :
-len(len)
+ParticleGenealogy<S>::ParticleGenealogy()
 {
-    genealogy = new vector<pair<S, double> *>(len);
+    
 }
 
 template <class S>
-pair<S, double> *ParticleGenealogy<S>::at(size_t r)
+size_t ParticleGenealogy<S>::size()
 {
-    return genealogy->at(r);
+    return state_genealogy.size();
 }
 
 template <class S>
-void ParticleGenealogy<S>::set(size_t r, pair<S, double> *ret)
+void ParticleGenealogy<S>::set(shared_ptr<S> state, double log_w)
 {
-    (*genealogy)[r] = ret;
+    state_genealogy.push_back(state);
+    log_weights_genealogy.push_back(log_w);
+}
+
+template <class S>
+const S &ParticleGenealogy<S>::get_state_at(size_t r)
+{
+    return *state_genealogy[r].get();
+}
+
+template <class S>
+double ParticleGenealogy<S>::get_log_weight_at(size_t r)
+{
+    return log_weights_genealogy[r];
+}
+
+template <class S>
+shared_ptr<S> ParticleGenealogy<S>::get_state_ptr_at(size_t r)
+{
+    return state_genealogy[r];
 }
 
 #endif /* particle_genealogy_hpp */

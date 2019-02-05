@@ -14,9 +14,10 @@
 class PMCMCOptions
 {
 public:
-    size_t num_iterations;
-    size_t burn_in = 2000;
+    bool verbose = false;
+    size_t burn_in = 0;
     gsl_rng *random;
+    size_t num_iterations;
     PMCMCOptions(long seed, size_t num_iter);
 };
 

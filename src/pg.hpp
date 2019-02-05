@@ -27,71 +27,80 @@ using namespace std;
 
 template <class S, class P> class ParticleGibbs
 {
-    PMCMCOptions *options;
-    ConditionalSMC<S, P> *csmc;
-    PGProposal<S, P> *param_proposal;
-    vector<P*> *parameters;
-    vector<ParticleGenealogy<S> *> *states; // store the genealogy along with the log weights
+    PMCMCOptions &options;
+    ConditionalSMC<S, P> &csmc;
+    PGProposal<S, P> &param_proposal;
+    vector<P*> parameters;
+    vector<ParticleGenealogy<S> *> states; // store the genealogy along with the log weights
 
 public:
-    ParticleGibbs(PMCMCOptions *options, ConditionalSMC<S, P> *smc, PGProposal<S, P> *param_proposal);
+    ParticleGibbs(PMCMCOptions &options, ConditionalSMC<S, P> &smc, PGProposal<S, P> &param_proposal);
     void run();
-    vector<P*> *get_parameters();
-    vector<vector<pair<S, double>> *> *get_states();
+    vector<P*> &get_parameters();
+    vector<ParticleGenealogy<S> *> &get_states();
+    ~ParticleGibbs();
 };
 
 template <class S, class P>
-ParticleGibbs<S,P>::ParticleGibbs(PMCMCOptions *options, ConditionalSMC<S, P> *csmc, PGProposal<S, P> *param_proposal)
+ParticleGibbs<S,P>::ParticleGibbs(PMCMCOptions &options, ConditionalSMC<S, P> &csmc, PGProposal<S, P> &param_proposal) :
+options(options), csmc(csmc), param_proposal(param_proposal)
 {
-    this->options = options;
-    this->csmc = csmc;
-    this->param_proposal = param_proposal;
-    this->parameters = new vector<P*>();
-    this->states = new vector<ParticleGenealogy<S> *>();
 }
 
 template <class S, class P>
 void ParticleGibbs<S,P>::run()
 {
     // initialize the parameters
-    P *param = param_proposal->sample_from_prior(options->random);
+    P *param = param_proposal.sample_from_prior(options.random);
     // initialize state
-    ParticleGenealogy<S> *genealogy = csmc->initialize(*param);
+    ParticleGenealogy<S> *genealogy = 0;
 
-    double log_Z = csmc->get_log_marginal_likelihood();
+    double log_Z = 0.0;
     double max_log_z = DOUBLE_NEG_INF;
-    for (size_t i = 0; i < options->num_iterations; i++)
+    for (size_t i = 0; i < options.num_iterations; i++)
     {
-        cout << "logZ: " << log_Z << endl;
+        cout << "PG Iter: " << (i+1) << endl;
+        if (i == 0) {
+            genealogy = csmc.initialize(*param);
+        } else {
+            // run cSMC
+            genealogy = csmc.run_csmc(*param, genealogy);
+        }
+        log_Z = csmc.get_log_marginal_likelihood();
+        if (options.verbose)
+            cout << "logZ: " << log_Z << endl;
+
         if (log_Z > max_log_z) {
-            cout << "new maximum log likelihood is found!" << endl;
+            if (options.verbose)
+                cout << "new maximum log likelihood is found!" << endl;
             max_log_z = log_Z;
         }
 
-        parameters->push_back(param);
-        states->push_back(genealogy);
-        
         // propose new param: proposal can be quite general
         // as it can combine Gibbs sampling and form MH within MH
         // but it is always accepted
-        param = param_proposal->propose(options->random, param, genealogy);
-        // run cSMC
-        genealogy = csmc->run_csmc(*param, genealogy);
-        
-        log_Z = csmc->get_log_marginal_likelihood();
+        param = param_proposal.propose(options.random, param, genealogy);
+
+        parameters.push_back(param);
+        states.push_back(genealogy);
     }
 }
 
 template <class S, class P>
-vector<P*> *ParticleGibbs<S,P>::get_parameters()
+vector<P*> &ParticleGibbs<S,P>::get_parameters()
 {
     return parameters;
 }
 
 template <class S, class P>
-vector<vector<pair<S, double>> *> *ParticleGibbs<S,P>::get_states()
+vector<ParticleGenealogy<S> *> &ParticleGibbs<S,P>::get_states()
 {
     return states;
+}
+
+template <class S, class P>
+ParticleGibbs<S,P>::~ParticleGibbs()
+{
 }
 
 #endif /* pg_h */

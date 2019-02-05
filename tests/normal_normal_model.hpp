@@ -34,8 +34,8 @@ class NormalNormalModel : public ProblemSpecification<NormalNormalState, NormalN
 public:
     NormalNormalModel(size_t num_iter, size_t num_mh_iter, const vector<double> &data, double sigma);
     unsigned long num_iterations();
-    std::pair<NormalNormalState, double> *propose_initial(gsl_rng *random, NormalNormalHyperParams &param);
-    std::pair<NormalNormalState, double> *propose_next(gsl_rng *random, int t, NormalNormalState curr, NormalNormalHyperParams &param);
+    NormalNormalState *propose_initial(gsl_rng *random, double &log_w, NormalNormalHyperParams &params);
+    NormalNormalState *propose_next(gsl_rng *random, int t, const NormalNormalState &curr, double &log_w, NormalNormalHyperParams &params);
     double compute_log_lik(double mu, double sigma);
 };
 

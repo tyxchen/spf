@@ -17,7 +17,7 @@
 template <class P>
 class ParticlePopulation
 {
-    vector<P> *particles;
+    vector<shared_ptr<P>> *particles;
     vector<double> *log_weights = 0;
     vector<double> *normalized_weights = 0;
     unsigned long num_particles;
@@ -29,12 +29,13 @@ class ParticlePopulation
     bool resampled = false;
 
 public:
-    ParticlePopulation(vector<P> *particles);
-    ParticlePopulation(vector<P> *particles, double log_norm);
-    ParticlePopulation(vector<P> *particles, vector<double> *log_weights);
-    ParticlePopulation(vector<P> *particles, vector<double> *log_weights, double log_norm, double log_Z_ratio);
-    inline vector<double> *get_log_weights() { return log_weights; }
-    inline vector<P> *get_particles() { return particles; }
+    ParticlePopulation(vector<shared_ptr<P>> *particles);
+    ParticlePopulation(vector<shared_ptr<P>> *particles, double log_norm);
+    ParticlePopulation(vector<shared_ptr<P>> *particles, vector<double> *log_weights);
+    ParticlePopulation(vector<shared_ptr<P>> *particles, vector<double> *log_weights, double log_norm, double log_Z_ratio);
+    double get_log_weight(size_t k);
+    P &get_particle(size_t k);
+    vector<shared_ptr<P>> *get_particles();
     vector<double> *get_normalized_weights();
     double get_ess();
     double get_log_norm();
@@ -47,7 +48,7 @@ public:
 };
 
 template <class P>
-ParticlePopulation<P>::ParticlePopulation(vector<P> *particles, vector<double> *log_weights)
+ParticlePopulation<P>::ParticlePopulation(vector<shared_ptr<P>> *particles, vector<double> *log_weights)
 {
     this->particles = particles;
     this->log_weights = log_weights;
@@ -55,7 +56,7 @@ ParticlePopulation<P>::ParticlePopulation(vector<P> *particles, vector<double> *
 }
 
 template <class P>
-ParticlePopulation<P>::ParticlePopulation(vector<P> *particles, vector<double> *log_weights, double log_norm, double log_Z_ratio) :
+ParticlePopulation<P>::ParticlePopulation(vector<shared_ptr<P>> *particles, vector<double> *log_weights, double log_norm, double log_Z_ratio) :
 ParticlePopulation(particles, log_weights)
 {
     this->log_norm = log_norm;
@@ -63,7 +64,7 @@ ParticlePopulation(particles, log_weights)
 }
 
 template <class P>
-ParticlePopulation<P>::ParticlePopulation(vector<P> *particles)
+ParticlePopulation<P>::ParticlePopulation(vector<shared_ptr<P>> *particles)
 {
     this->particles = particles;
     this->num_particles = particles->size();
@@ -71,10 +72,29 @@ ParticlePopulation<P>::ParticlePopulation(vector<P> *particles)
 }
 
 template <class P>
-ParticlePopulation<P>::ParticlePopulation(vector<P> *particles, double log_norm) :
+ParticlePopulation<P>::ParticlePopulation(vector<shared_ptr<P>> *particles, double log_norm) :
 ParticlePopulation(particles)
 {
     this->log_norm = log_norm;
+}
+
+template <class P>
+double ParticlePopulation<P>::get_log_weight(size_t k)
+{
+    return log_weights->at(k);
+}
+
+template <class P>
+vector<shared_ptr<P>> *ParticlePopulation<P>::get_particles()
+{
+    return particles;
+}
+
+template <class P>
+P &ParticlePopulation<P>::get_particle(size_t k)
+{
+    P &p = *particles->at(k).get();
+    return p;
 }
 
 template <class P>

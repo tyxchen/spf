@@ -21,20 +21,18 @@ unsigned long SVModel::num_iterations()
     return obs.size();
 }
 
-std::pair<double, double> *SVModel::propose_initial(gsl_rng *random, SVModelParams &params)
+double *SVModel::propose_initial(gsl_rng *random, double &log_w, SVModelParams &params)
 {
-    double x1 = gsl_ran_gaussian(random, params.sigma);
-    double obs_log_lik = log(gsl_ran_gaussian_pdf(obs[0], sqrt(exp(x1)) * params.beta));
-    auto *ret = new pair<double, double>(x1, obs_log_lik);
-    return ret;
+    double *x1 = new double(gsl_ran_gaussian(random, params.sigma));
+    log_w = log(gsl_ran_gaussian_pdf(obs[0], sqrt(exp(*x1)) * params.beta));
+    return x1;
 }
 
-std::pair<double, double> *SVModel::propose_next(gsl_rng *random, int t, double curr, SVModelParams &params)
+double *SVModel::propose_next(gsl_rng *random, int t, const double &curr, double &log_w, SVModelParams &params)
 {
-    double xt = params.phi * curr + gsl_ran_gaussian(random, params.sigma);
-    double obs_log_lik = log(gsl_ran_gaussian_pdf(obs[t], sqrt(exp(xt)) * params.beta));
-    auto *ret = new pair<double, double>(xt, obs_log_lik);
-    return ret;
+    double *xt = new double(params.phi * curr + gsl_ran_gaussian(random, params.sigma));
+    log_w = log(gsl_ran_gaussian_pdf(obs[t], sqrt(exp(*xt)) * params.beta));
+    return xt;
 }
 
 void SVModel::generate_data(gsl_rng *random, size_t T, SVModelParams &params, vector<double> &latent, vector<double> &obs)

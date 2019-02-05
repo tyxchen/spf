@@ -14,8 +14,8 @@ class NormalNormalState
     double sigma;
 public:
     NormalNormalState(double mu, double sigma);
-    inline double get_mu() { return mu; }
-    inline double get_sigma() { return sigma; }
+    inline double get_mu() const { return mu; }
+    inline double get_sigma() const { return sigma; }
     void set_mu(double mu);
 };
 

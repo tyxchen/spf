@@ -90,9 +90,8 @@ CompactParticlePopulation<S> SPF<S,P>::propose_compact_population(PermutationStr
 {
     unsigned int idx = 0;
     CompactParticlePopulation<S> compact_pop;
-    pair<int, double> *ret;
 
-    vector<S> *curr_particles = 0;
+    vector<shared_ptr<S>> *curr_particles = 0;
     if (pop != 0) {
         curr_particles = pop->get_particles();
     }
@@ -101,13 +100,15 @@ CompactParticlePopulation<S> SPF<S,P>::propose_compact_population(PermutationStr
             (compact_pop.get_num_particles() < options->max_virtual_particles &&
              compact_pop.ess()/options->num_particles < options->ess_threshold))
     {
+        double log_w = 0.0;
         idx = stream.pop();
         if (pop == 0) {
-            ret = proposal->propose_initial(random, params);
+            proposal->propose_initial(random, log_w, params);
         } else {
-            ret = proposal->propose_next(random, iter, (*curr_particles)[idx], params);
+            S &parent = *curr_particles->at(idx).get();
+            proposal->propose_next(random, iter, parent, log_w, params);
         }
-        compact_pop.add_weight(ret->second);
+        compact_pop.add_weight(log_w);
     }
 
     return compact_pop;
@@ -122,13 +123,10 @@ ParticlePopulation<S> *SPF<S,P>::contraction(PermutationStream &stream, Particle
     unsigned int idx = 0;
     double normalized_partial_sum = 0.0;
     double *sorted_uniform = new double[N];
-    pair<S, double> *ret;
     double log_norm = compact_pop.get_log_sum_weights();
-    
-    vector<S> *new_particles = new vector<S>(N);
-    //vector<double> *new_log_weights = new vector<double>(N);
 
-    vector<S> *curr_particles = 0;
+    vector<shared_ptr<S>> *new_particles = new vector<shared_ptr<S>>(N);
+    vector<shared_ptr<S>> *curr_particles = 0;
     if (pop != 0) {
         curr_particles = pop->get_particles();
     }
@@ -149,31 +147,36 @@ ParticlePopulation<S> *SPF<S,P>::contraction(PermutationStream &stream, Particle
     gsl_rng *random = stream.get_random();
     CompactParticlePopulation<S> sanity_check;
     //double log_weight = log(1./N);
+    S *s = 0;
     for (int n = 0; n < N; n++)
     {
         while (normalized_partial_sum < sorted_uniform[n]) {
             idx = stream.pop();
+            double log_w = 0.0;
             if (pop == 0) {
-                ret = proposal->propose_initial(random, params);
+                s = proposal->propose_initial(random, log_w, params);
             } else {
-                ret = proposal->propose_next(random, iter, (*curr_particles)[idx], params);
+                S &parent = *curr_particles->at(idx).get();
+                s = proposal->propose_next(random, iter, parent, log_w, params);
             }
-            normalized_partial_sum += exp(ret->second - log_norm);
-            sanity_check.add_weight(ret->second);
+            normalized_partial_sum += exp(log_w - log_norm);
+            sanity_check.add_weight(log_w);
         }
-        (*new_particles)[n] = ret->first;
+        (*new_particles)[n] = unique_ptr<S>(s);
         //(*new_log_weights)[n] = log_weight;
     }
     
     int num_iter_left = compact_pop.get_num_particles() - sanity_check.get_num_particles();
     for (int j = 0; j < num_iter_left; j++) {
         idx = stream.pop();
+        double log_w = 0.0;
         if (pop == 0) {
-            ret = proposal->propose_initial(random, params);
+            proposal->propose_initial(random, log_w, params);
         } else {
-            ret = proposal->propose_next(random, iter, (*curr_particles)[idx], params);
+            S &parent = *curr_particles->at(idx).get();
+            proposal->propose_next(random, iter, parent, log_w, params);
         }
-        sanity_check.add_weight(ret->second);
+        sanity_check.add_weight(log_w);
     }
 
     if (options->debug) {

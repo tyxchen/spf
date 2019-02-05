@@ -23,6 +23,7 @@ const double NaN = std::numeric_limits<double>::quiet_NaN();
 double log_binomial_pdf(const unsigned int k, const double p, const unsigned int n);
 double normalize(vector<double> &log_weights, vector<double> &weights);
 void normalize(vector<double> &log_weights, vector<double> &weights, double log_norm);
+void normalize_destructively(vector<double> &log_weights, double log_norm);
 double normalize_destructively(vector<double> &log_weights);
 double normalize_destructively(double *log_weights, int size);
 double log_add(double x, double y);

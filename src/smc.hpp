@@ -10,6 +10,7 @@
 #ifndef SRC_SMC_HPP_
 #define SRC_SMC_HPP_
 
+#include <memory>
 #include <vector>
 #include <gsl/gsl_rng.h>
 
@@ -37,8 +38,8 @@ template <class S, class P> class SMC
 public:
 	SMC(ProblemSpecification<S, P> *proposal, SMCOptions *options);
 	void run_smc(P &params);
-    S *sample(gsl_rng *random);
     double get_log_marginal_likelihood();
+    vector<S*> sample(gsl_rng *random);
     inline ParticlePopulation<S>* get_curr_population() { return populations->back(); }
     inline ParticlePopulation<S> *get_population(size_t i) { return populations->at(i); }
     ~SMC();
@@ -91,39 +92,36 @@ void SMC<S,P>::run_smc(P &params)
 template <class S, class P>
 ParticlePopulation<S> *SMC<S,P>::propose(gsl_rng *random, ParticlePopulation<S> *pop, int iter, int num_proposals, P &params)
 {
-    vector<S> *curr_particles = 0;
-    vector<double> *curr_log_weights = 0;
     bool is_resampled = true;
     if (pop != 0) {
-        curr_particles = pop->get_particles();
-        curr_log_weights = pop->get_log_weights();
         is_resampled = pop->is_resampled();
     }
 
-    vector<S> *new_particles = new vector<S>();
-    vector<double> *new_log_weights = new vector<double>();
+    vector<shared_ptr<S>> *new_particles = new vector<shared_ptr<S>>();
+    vector<double> *new_log_weights = new vector<double>(options->num_particles);
 
     double log_norm = DOUBLE_NEG_INF;
     double log_Z_ratio = DOUBLE_NEG_INF;
-    std::pair<S, double> *ret;
     double log_prev_w = -log(num_proposals);
-    double logw = 0.0;
+    S *s = 0;
     for (int n = 0; n < num_proposals; n++)
     {
         if (pop == 0) {
-            ret = proposal->propose_initial(random, params);
+            s = proposal->propose_initial(random, (*new_log_weights)[n], params);
         } else {
-            ret = proposal->propose_next(random, iter, (*curr_particles)[n], params);
+            S &parent = pop->get_particle(n);
+            s = proposal->propose_next(random, iter, parent, (*new_log_weights)[n], params);
         }
-        new_particles->push_back(ret->first);
+
         if (is_resampled) {
-            log_Z_ratio = log_add(log_Z_ratio, ret->second + log_prev_w);
+            log_Z_ratio = log_add(log_Z_ratio, (*new_log_weights)[n] + log_prev_w);
         } else {
-            log_prev_w = (*curr_log_weights)[n];
-            log_Z_ratio = log_add(log_Z_ratio, ret->second + log_prev_w - pop->get_log_norm());
+            log_prev_w = pop->get_log_weight(n);
+            log_Z_ratio = log_add(log_Z_ratio, (*new_log_weights)[n] + log_prev_w - pop->get_log_norm());
         }
-        logw = ret->second + log_prev_w;
-        new_log_weights->push_back(logw);
+        new_particles->push_back(std::shared_ptr<S>(s));
+        (*new_log_weights)[n] += log_prev_w;
+
         log_norm = log_add(log_norm, new_log_weights->at(n));
     }
     // note: log_norm is an approximation of Z_t/Z_{t-1}
@@ -148,12 +146,11 @@ ParticlePopulation<S>* SMC<S,P>::resample(const gsl_rng *random, SMCOptions::Res
             break;
     }
 
-    vector<S> *curr_particles = pop->get_particles();
-
-    vector<S> *particles = new vector<S>();
+    vector<shared_ptr<S>> *prev_particles = pop->get_particles();
+    vector<shared_ptr<S>> *particles = new vector<shared_ptr<S>>();
     for (int n = 0; n < N; n++)
     {
-        particles->push_back((*curr_particles)[indices[n]]);
+        particles->push_back(prev_particles->at(indices[n])); // move ownership to new ParticlePopulation
     }
 
     ParticlePopulation<S> *new_pop = new ParticlePopulation<S>(particles, pop->get_log_norm());
@@ -169,27 +166,10 @@ double SMC<S,P>::get_log_marginal_likelihood()
 }
 
 template <class S, class P>
-S *SMC<S,P>::sample(gsl_rng *random)
+vector<S*> SMC<S,P>::sample(gsl_rng *random)
 {
-    ParticlePopulation<S> *pop = get_curr_population(); // it could be either normalized already or not (doesn't matter either way)
-    int N = 1;
-    unsigned int *indices = new unsigned int[N];
-    switch (options->resampling_scheme)
-    {
-        case SMCOptions::ResamplingScheme::MULTINOMIAL:
-            multinomial_resampling(random, pop->get_normalized_weights(), N, indices);
-            break;
-        case SMCOptions::ResamplingScheme::STRATIFIED:
-            stratified_resampling(random, pop->get_normalized_weights(), N, indices);
-            break;
-        case SMCOptions::ResamplingScheme::SYSTEMATIC:
-            systematic_resampling(random, pop->get_normalized_weights(), N, indices);
-            break;
-    }
-    
-    vector<S> *curr_particles = pop->get_particles();
-    S *sample = new S((*curr_particles)[indices[0]]); // use default copy constructor to create a pointer object
-    return sample;
+    vector<S*> ret;
+    return ret;
 }
 
 template <class S, class P>

@@ -178,7 +178,7 @@ bool test_smc(long seed)
     SMC<int, DiscreteHMMParams> smc(new DiscreteHMM(y), options);
     smc.run_smc(true_params);
     ParticlePopulation<int> *pop = smc.get_curr_population();
-    vector<int> *particles = pop->get_particles();
+    vector<shared_ptr<int>> *particles = pop->get_particles();
     vector<double> *normalized_weights = pop->get_normalized_weights();
 
     // retrieve the estimate
@@ -193,7 +193,8 @@ bool test_smc(long seed)
     vector<double> probs_T(num_latent_states);
     for (int n = 0; n < options->num_particles; n++)
     {
-        probs_T[(*particles)[n]] += (*normalized_weights)[n];
+        int state = *particles->at(n).get();
+        probs_T[state] += (*normalized_weights)[n];
     }
     
     double total_error = 0.0;
@@ -231,11 +232,20 @@ bool test_csmc(long seed)
         //cout << logZ << endl;
     }
     unsigned int r = 2;
-    vector<int> *particles = csmc.get_particles(r);
-    vector<double> *log_weights = csmc.get_log_weights(r);
+    vector<int> particles;
+//    vector<double> *log_weights = csmc.get_log_weights(r);
+    vector<double> normalized_weights;
     double log_norm = csmc.get_log_norm(r);
-    vector<double> *normalized_weights = new vector<double>(particles->size());
-    normalize(*log_weights, *normalized_weights, log_norm);
+    double sum = 0.0;
+    double norm_w = 0.0;
+    for (size_t k = 0; k < options->num_particles; k++) {
+        const int &state  = csmc.get_state(r, k);
+        double log_w = csmc.get_log_weight(r, k);
+        norm_w = exp(log_w - log_norm);
+        particles.push_back(state);
+        normalized_weights.push_back(norm_w);
+        sum += norm_w;
+    }
 
     // retrieve the estimate
     double log_marginal_lik = csmc.get_log_marginal_likelihood();
@@ -249,7 +259,7 @@ bool test_csmc(long seed)
     vector<double> probs_T(num_latent_states);
     for (int n = 0; n < options->num_particles; n++)
     {
-        probs_T[(*particles)[n]] += (*normalized_weights)[n];
+        probs_T[particles[n]] += normalized_weights[n];
     }
     
     double total_error = 0.0;
@@ -286,7 +296,7 @@ bool test_spf(long seed)
     SPF<int, DiscreteHMMParams> spf(new DiscreteHMM(y), options);
     spf.run_spf(true_params);
     ParticlePopulation<int> *pop = spf.get_curr_population();
-    vector<int> *particles = pop->get_particles();
+    vector<shared_ptr<int>> *particles = pop->get_particles();
 
     double log_marginal_lik = spf.get_log_marginal_likelihood();
     cout << "Estimate log P(y)= " << log_marginal_lik << "; Expected log P(y)= " << true_log_marginal_lik << endl;
@@ -299,7 +309,8 @@ bool test_spf(long seed)
     double probs_T[num_latent_states];
     for (int n = 0; n < options->num_particles; n++)
     {
-        probs_T[(*particles)[n]]++;
+        int state = *particles->at(n).get();
+        probs_T[state]++;
     }
     
     double total_error = 0.0;
@@ -430,7 +441,7 @@ double *compare_resampling_schemes(long seed, unsigned int num_particles, unsign
         SMC<int,DiscreteHMMParams> smc(new DiscreteHMM(obs), options);
         smc.run_smc(true_params);
         ParticlePopulation<int> *pop = smc.get_curr_population();
-        vector<int> *particles = pop->get_particles();
+        vector<shared_ptr<int>> *particles = pop->get_particles();
         //vector<double> *log_weights = pop->get_log_weights();
         vector<double> *normalized_weights = pop->get_normalized_weights();
         //cout << normalized_weights->size() << ", " << particles->size() << endl;
@@ -439,12 +450,14 @@ double *compare_resampling_schemes(long seed, unsigned int num_particles, unsign
         double var_T[num_latent_states];
         for (int n = 0; n < options->num_particles; n++)
         {
-            probs_T[(*particles)[n]] += (*normalized_weights)[n];
+            int state = *particles->at(n).get();
+            probs_T[state] += (*normalized_weights)[n];
         }
         for (int n = 0; n < num_particles; n++)
         {
-            double diff = (*normalized_weights)[n] - probs_T[(*particles)[n]];
-            var_T[(*particles)[n]] += diff * diff;
+            int state = *particles->at(n).get();
+            double diff = (*normalized_weights)[n] - probs_T[state];
+            var_T[state] += diff * diff;
         }
         vars[i] = var_T[0] / num_particles;
         //cout << options->resampling_scheme << ": " << vars[i] << endl;
@@ -459,8 +472,8 @@ void test_pmmh(long seed)
     SMCOptions *smc_options = new SMCOptions();
     smc_options->num_particles = 200;
     SVModel *proposal = new SVModel(sv_y);
-    SMC<double, SVModelParams> *smc = new SMC<double, SVModelParams>(proposal, smc_options);
-    smc->run_smc(true_sv_params);
+    ConditionalSMC<double, SVModelParams> *smc = new ConditionalSMC<double, SVModelParams>(proposal, smc_options);
+    smc->run_csmc(true_sv_params, 0);
     double logZ = smc->get_log_marginal_likelihood();
     cout << logZ << endl; // logZ at true params
 
@@ -487,22 +500,22 @@ void test_pg(long seed)
     SMCOptions *smc_options = new SMCOptions();
     smc_options->num_particles = 200;
     ProblemSpecification<double, SVModelParams> *proposal = new SVModel(sv_y);
-    ConditionalSMC<double, SVModelParams> *csmc = new ConditionalSMC<double, SVModelParams>(proposal, smc_options);
+    ConditionalSMC<double, SVModelParams> csmc(proposal, smc_options);
 
-    PMCMCOptions *pmcmc_options = new PMCMCOptions(seed, 4000);
-    pmcmc_options->burn_in = 1000;
+    PMCMCOptions pmcmc_options(seed, 4000);
+    pmcmc_options.burn_in = 1000;
     
     double a = 0.01, b = 0.01;
-    PGProposal<double, SVModelParams> *param_proposal = new SVModelGibbsProposal(a, b, sv_y);
+    SVModelGibbsProposal param_proposal(a, b, sv_y);
     
     ParticleGibbs<double, SVModelParams> pg(pmcmc_options, csmc, param_proposal);
     pg.run();
-    vector<SVModelParams *> *samples = pg.get_parameters();
+    vector<SVModelParams *> &samples = pg.get_parameters();
     // compute the posterior mean for beta
     double mean = 0.0;
     size_t count = 0;
-    for (size_t i = pmcmc_options->burn_in; i < samples->size(); i+=10) {
-        mean += (*samples)[i]->beta;
+    for (size_t i = pmcmc_options.burn_in; i < samples.size(); i+=10) {
+        mean += samples[i]->beta;
         count++;
     }
     mean /= count;
@@ -521,6 +534,7 @@ int main()
     if (!test_smc_sampler(seed))
         return -1;
 
+    // implement formal validation framework for PMMH and PG
     //test_pmmh(seed);
     //test_pg(seed);
     cout << "All tests passed!" << endl;

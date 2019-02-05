@@ -48,9 +48,24 @@ double normalize(vector<double> &log_weights, vector<double> &weights)
 
 void normalize(vector<double> &log_weights, vector<double> &weights, double log_norm)
 {
+    double sum = 0.0;
     for (unsigned int i = 0; i < log_weights.size(); i++)
     {
         weights[i] = exp(log_weights[i] - log_norm);
+        sum += weights[i];
+    }
+    if (abs(sum - 1.0) > 1e-6) {
+        cerr << "Error in normalization. Check that log_weights and log_norm are correctly calculated." << endl;
+        exit(-1);
+    }
+}
+
+void normalize_destructively(vector<double> &log_weights, double log_norm)
+{
+    // compute the lognorm
+    for (unsigned int i = 0; i < log_weights.size(); i++)
+    {
+        log_weights[i] = exp(log_weights[i] - log_norm);
     }
 }
 
@@ -58,10 +73,7 @@ double normalize_destructively(vector<double> &log_weights)
 {
     // compute the lognorm
     double log_norm = log_add(log_weights);
-    for (unsigned int i = 0; i < log_weights.size(); i++)
-    {
-        log_weights[i] = exp(log_weights[i] - log_norm);
-    }
+    normalize_destructively(log_weights, log_norm);
     return log_norm;
 }
 
