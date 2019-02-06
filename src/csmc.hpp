@@ -31,24 +31,26 @@ class ConditionalSMC
     double compute_ess(vector<double> &probs);
 
     // store the particles and ancestor indices in a vector
-    vector<vector<shared_ptr<S> > *> particles;
-    vector<vector<double> *> log_weights;
-    vector<double> *log_norms;
-    vector<double> *probs; // helper variable to avoid having to re-allocate space in memory for resampling
-    vector<vector<int> *> ancestors;
+    vector<vector<shared_ptr<S> >> particles;
+    vector<vector<double>> log_weights;
+    vector<vector<int>> ancestors;
+    vector<double> log_norms;
+    vector<double> probs; // helper variable to avoid having to re-allocate space in memory for resampling
 
 public:
     ConditionalSMC(ProblemSpecification<S, P> *proposal, SMCOptions *options);
     ParticleGenealogy<S> *initialize(P &params);
     ParticleGenealogy<S> *run_csmc(P &params, ParticleGenealogy<S> *genealogy);
     double get_log_marginal_likelihood();
-    inline double get_log_norm(unsigned int r) { return (*log_norms)[r]; }
+    inline double get_log_norm(unsigned int r) { return log_norms[r]; }
     const S& get_state(unsigned int r, unsigned int k);
     double get_log_weight(unsigned int r, unsigned int k);
+    ~ConditionalSMC();
 };
 
 template <class S, class P>
-ConditionalSMC<S,P>::ConditionalSMC(ProblemSpecification<S, P> *proposal, SMCOptions *options)
+ConditionalSMC<S,P>::ConditionalSMC(ProblemSpecification<S, P> *proposal, SMCOptions *options) :
+log_norms(proposal->num_iterations()), probs(options->num_particles)
 {
     this->proposal = proposal;
     this->options = options;
@@ -56,13 +58,16 @@ ConditionalSMC<S,P>::ConditionalSMC(ProblemSpecification<S, P> *proposal, SMCOpt
 
     // initialize and allocate memory to store log weights, ancestral indices, log norms, and helper variable (probs)
     size_t R = proposal->num_iterations();
-    log_norms = new vector<double>(R);
-    probs = new vector<double>(options->num_particles);
+//    log_norms.reserve(R);
+//    probs.reserve(options->num_particles);
+    //log_norms = new vector<double>(R);
+    //probs = new vector<double>(options->num_particles);
 
     for (size_t r = 0; r < R; r++) {
-        log_weights.push_back(new vector<double>(options->num_particles));
+        particles.push_back(vector<shared_ptr<S>>(options->num_particles));
+        log_weights.push_back(vector<double>(options->num_particles));
         if (r < R - 1) // there are R-1 ancestor indices since no resampling is performed at the last iteration
-            ancestors.push_back(new vector<int>(options->num_particles));
+            ancestors.push_back(vector<int>(options->num_particles));
     }
 }
 
@@ -82,7 +87,7 @@ ParticleGenealogy<S> *ConditionalSMC<S,P>::run_csmc(P &params, ParticleGenealogy
     for (unsigned int r = 0; r < R; r++)
     {
         log_norm = propose(options->main_random, params, r, genealogy);
-        (*log_norms)[r] = log_norm;
+        log_norms[r] = log_norm;
         log_marginal_likelihood += (log_norm - log_N);
 
         if (r < R - 1)
@@ -105,15 +110,15 @@ double ConditionalSMC<S,P>::propose(gsl_rng *random, P &params, unsigned int r, 
         cerr << "Bug in the implementation of cSMC: " << particles.size() << endl;
         exit(-1);
     }
-    bool particles_initialized = true; // use push_back to insert to states
-    if (particles.size() == r) {
-        // allocate memory to store the particles
-        particles.push_back(new vector<shared_ptr<S> >());
-        particles_initialized = false;
-    }
+//    bool particles_initialized = true; // use push_back to insert to states
+    // allocate memory to store the particles
+//    if (particles.size() == r) {
+//        particles.push_back(new vector<shared_ptr<S> >());
+//        particles_initialized = false;
+//    }
 
-    vector<shared_ptr<S> > &particles_at_r = *particles[r];
-    vector<double> &log_w = *log_weights[r];
+    vector<shared_ptr<S> > &particles_at_r = particles[r];
+    vector<double> &log_w = log_weights[r];
 
     S *s;
     for (size_t k = 0; k < N; k++)
@@ -121,25 +126,27 @@ double ConditionalSMC<S,P>::propose(gsl_rng *random, P &params, unsigned int r, 
         if (r == 0) {
             s = proposal->propose_initial(random, log_w[k], params);
         } else {
-            parent_idx = (*ancestors[r-1])[k];
-            S *parent_particle = particles[r-1]->at(parent_idx).get();
+            parent_idx = ancestors[r-1][k];
+            S *parent_particle = particles[r-1].at(parent_idx).get();
             s = proposal->propose_next(random, r, *parent_particle, log_w[k], params);
         }
 
-        if (!particles_initialized) {
-            particles_at_r.push_back(shared_ptr<S>(s));
-        } else {
-            particles_at_r[k].reset(s);
-        }
+        particles_at_r[k].reset(s);
+//        if (!particles_initialized) {
+//            particles_at_r.push_back(shared_ptr<S>(s));
+//        } else {
+//            particles_at_r[k].reset(s);
+//        }
         log_norm = log_add(log_norm, log_w[k]);
     }
     if (genealogy != 0) {
         // the last particle is to be fixed by the given genealogy
-        if (!particles_initialized) {
-            particles_at_r.push_back(genealogy->get_state_ptr_at(r));
-        } else {
-            particles_at_r[N] = genealogy->get_state_ptr_at(r);
-        }
+        particles_at_r[N] = genealogy->get_state_ptr_at(r);
+//        if (!particles_initialized) {
+//            particles_at_r.push_back(genealogy->get_state_ptr_at(r));
+//        } else {
+//            particles_at_r[N] = genealogy->get_state_ptr_at(r);
+//        }
         log_w[N] = genealogy->get_log_weight_at(r);
         log_norm = log_add(log_norm, log_w[N]);
     }
@@ -154,27 +161,22 @@ void ConditionalSMC<S,P>::resample(gsl_rng *random, unsigned int r, bool fix_las
     unsigned int N = options->num_particles;
 
     // normalize the log weights
-    normalize(*log_weights[r], *probs, log_norm);
+    normalize(log_weights[r], probs, log_norm);
 
-    unsigned int num_resamples;
-    if (fix_last_genealogy) {
-        num_resamples = N-1;
-    } else {
-        num_resamples = N;
-    }
+    unsigned int num_resamples = fix_last_genealogy ? N - 1: N;
     
     // TODO: instead of using indices, pass in ancestors[r] directly?
     unsigned int *indices = new unsigned int[num_resamples];
-    multinomial_resampling(random, probs, num_resamples, indices);
+    multinomial_resampling(random, &probs, num_resamples, indices);
 
     for (size_t k = 0; k < N-1; k++)
     {
-        (*ancestors[r])[k] = indices[k];
+        ancestors[r][k] = indices[k];
     }
     if (fix_last_genealogy) {
-        (*ancestors[r])[N-1] = N-1;
+        ancestors[r][N-1] = N-1;
     } else {
-        (*ancestors[r])[N-1] = indices[N-1];
+        ancestors[r][N-1] = indices[N-1];
     }
     delete [] indices;
 }
@@ -185,15 +187,15 @@ ParticleGenealogy<S> *ConditionalSMC<S,P>::sample_genealogy(const gsl_rng *rando
     size_t R = proposal->num_iterations();
 
     // normalize the log weights
-    normalize(*log_weights[R-1], *probs, (*log_norms)[R-1]);
-    unsigned int idx = multinomial(random, *probs);
+    normalize(log_weights[R-1], probs, log_norms[R-1]);
+    unsigned int idx = multinomial(random, probs);
     
     ParticleGenealogy<S> *genealogy = new ParticleGenealogy<S>();
     for (size_t r = 0; r < R; r++) {
         size_t curr_iter = R - r - 1;
-        genealogy->set(particles[curr_iter]->at(idx), log_weights[curr_iter]->at(idx));
+        genealogy->set(particles[curr_iter].at(idx), log_weights[curr_iter].at(idx));
         if (curr_iter > 0) {
-            idx = (*ancestors[curr_iter-1])[idx];
+            idx = ancestors[curr_iter-1][idx];
         }
     }
 
@@ -222,14 +224,18 @@ double ConditionalSMC<S,P>::get_log_marginal_likelihood()
 template <class S, class P>
 const S& ConditionalSMC<S,P>::get_state(unsigned int r, unsigned int k)
 {
-    return *particles[r]->at(k).get();
+    return *particles[r].at(k).get();
 }
 
 template <class S, class P>
 double ConditionalSMC<S,P>::get_log_weight(unsigned int r, unsigned int k)
 {
-    return log_weights[r]->at(k);
+    return log_weights[r].at(k);
 }
 
+template <class S, class P>
+ConditionalSMC<S,P>::~ConditionalSMC()
+{
+}
 
 #endif /* csmc_h */
