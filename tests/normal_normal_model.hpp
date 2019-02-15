@@ -30,13 +30,14 @@ class NormalNormalModel : public ProblemSpecification<NormalNormalState, NormalN
     size_t num_mh_iter;
     const vector<double> &data;
     double sigma;
-    double get_temperature(double t);
 public:
     NormalNormalModel(size_t num_iter, size_t num_mh_iter, const vector<double> &data, double sigma);
     unsigned long num_iterations();
-    NormalNormalState *propose_initial(gsl_rng *random, double &log_w, NormalNormalHyperParams &params);
-    NormalNormalState *propose_next(gsl_rng *random, int t, const NormalNormalState &curr, double &log_w, NormalNormalHyperParams &params);
-    double compute_log_lik(double mu, double sigma);
+    shared_ptr<NormalNormalState> propose_initial(gsl_rng *random, double &log_w, NormalNormalHyperParams &params);
+    shared_ptr<NormalNormalState> propose_next(gsl_rng *random, int t, const NormalNormalState &curr, double &log_w, NormalNormalHyperParams &params);
+    
+    static double get_temperature(double t, size_t num_iter);
+    static double compute_log_lik(const vector<double> &data, double mu, double sigma);
 };
 
 #endif /* normal_normal_model_hpp */

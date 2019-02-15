@@ -10,6 +10,7 @@
 
 #include <gsl/gsl_rng.h>
 
+#include <memory>
 #include <utility>
 
 #include "particle.hpp"
@@ -31,9 +32,9 @@ public:
 	//virtual std::pair<S, double> *propose_next(gsl_rng *random, int t, S curr, P &params) = 0;
 
     // return the state, set the logw
-    virtual S *propose_initial(gsl_rng *random, double &logw, P &params) = 0;
+    virtual std::shared_ptr<S> propose_initial(gsl_rng *random, double &logw, P &params) = 0;
     // current state is not to be modified -- template class S should provide const functions so that necessary components can be accessed
-    virtual S *propose_next(gsl_rng *random, int t, const S &curr, double &logw, P &params) = 0;
+    virtual std::shared_ptr<S> propose_next(gsl_rng *random, int t, const S &curr, double &logw, P &params) = 0;
     virtual ~ProblemSpecification() { }
 };
 

@@ -41,8 +41,12 @@ public:
 
 void SMCOptions::init()
 {
-    main_random = generate_random_object(main_seed);
-    resampling_random = generate_random_object(resampling_seed);
+    if (main_random == 0) {
+        main_random = generate_random_object(main_seed);
+    }
+    if (resampling_random == 0) {
+        resampling_random = generate_random_object(resampling_seed);
+    }
 }
 
 #endif /* smc_options_h */

@@ -6,10 +6,11 @@
 //  Copyright © 2018 Seong-Hwan Jun. All rights reserved.
 //
 
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <iterator>
-#include <cmath>
+#include <omp.h>
 #include <vector>
 #include <unistd.h>
 #include <unordered_map>
@@ -169,13 +170,14 @@ bool test_numerical_utils()
 bool test_smc(long seed)
 {
     cout << "=====Testing SMC=====" << endl;
-    SMCOptions *options = new SMCOptions();
-    options->main_seed = seed;
-    options->ess_threshold = 1;
-    options->num_particles = 10000;
-    options->resample_last_round = true;
+    SMCOptions options;
+    options.main_seed = seed;
+    options.ess_threshold = 1;
+    options.num_particles = 10000;
+    options.resample_last_round = true;
 
-    SMC<int, DiscreteHMMParams> smc(new DiscreteHMM(y), options);
+    DiscreteHMM model(y);
+    SMC<int, DiscreteHMMParams> smc(model, options);
     smc.run_smc(true_params);
     ParticlePopulation<int> *pop = smc.get_curr_population();
     vector<shared_ptr<int>> *particles = pop->get_particles();
@@ -191,7 +193,7 @@ bool test_smc(long seed)
     }
 
     vector<double> probs_T(num_latent_states);
-    for (int n = 0; n < options->num_particles; n++)
+    for (int n = 0; n < options.num_particles; n++)
     {
         int state = *particles->at(n).get();
         probs_T[state] += (*normalized_weights)[n];
@@ -217,14 +219,15 @@ bool test_smc(long seed)
 bool test_csmc(long seed)
 {
     cout << "=====Testing conditional SMC=====" << endl;
-    SMCOptions *options = new SMCOptions();
-    options->main_seed = seed;
-    options->resampling_seed = seed+123;
-    options->ess_threshold = 1;
-    options->num_particles = 10000;
+    SMCOptions options;
+    options.main_seed = seed;
+    options.resampling_seed = seed+123;
+    options.ess_threshold = 1;
+    options.num_particles = 10000;
 
-    ConditionalSMC<int, DiscreteHMMParams> csmc(new DiscreteHMM(y), options);
-    ParticleGenealogy<int> *genealogy = csmc.initialize(true_params);
+    DiscreteHMM model(y);
+    ConditionalSMC<int, DiscreteHMMParams> csmc(model, options);
+    shared_ptr<ParticleGenealogy<int>> genealogy = csmc.initialize(true_params);
     double logZ = csmc.get_log_marginal_likelihood();
     for (size_t num_iter = 0; num_iter < 20; num_iter++) {
         genealogy = csmc.run_csmc(true_params, genealogy);
@@ -238,7 +241,7 @@ bool test_csmc(long seed)
     double log_norm = csmc.get_log_norm(r);
     double sum = 0.0;
     double norm_w = 0.0;
-    for (size_t k = 0; k < options->num_particles; k++) {
+    for (size_t k = 0; k < options.num_particles; k++) {
         const int &state  = csmc.get_state(r, k);
         double log_w = csmc.get_log_weight(r, k);
         norm_w = exp(log_w - log_norm);
@@ -257,7 +260,7 @@ bool test_csmc(long seed)
     }
 
     vector<double> probs_T(num_latent_states);
-    for (int n = 0; n < options->num_particles; n++)
+    for (int n = 0; n < options.num_particles; n++)
     {
         probs_T[particles[n]] += normalized_weights[n];
     }
@@ -283,17 +286,18 @@ bool test_csmc(long seed)
 bool test_spf(long seed)
 {
     cout << "=====Testing SPF=====" << endl;
-    
-    gsl_rng *random = generate_random_object(seed);
-    SMCOptions *options = new SMCOptions();
-    options->main_seed = gsl_rng_get(random);
-    options->resampling_seed = gsl_rng_get(random);
-    options->ess_threshold = DOUBLE_INF;
-    options->num_particles = 10000;
-    options->max_virtual_particles = 20000;
-    options->resample_last_round = true;
 
-    SPF<int, DiscreteHMMParams> spf(new DiscreteHMM(y), options);
+    gsl_rng *random = generate_random_object(seed);
+    SMCOptions options;
+    options.main_seed = gsl_rng_get(random);
+    options.resampling_seed = gsl_rng_get(random);
+    options.ess_threshold = DOUBLE_INF;
+    options.num_particles = 10000;
+    options.max_virtual_particles = 20000;
+    options.resample_last_round = true;
+
+    DiscreteHMM model(y);
+    SPF<int, DiscreteHMMParams> spf(model, options);
     spf.run_spf(true_params);
     ParticlePopulation<int> *pop = spf.get_curr_population();
     vector<shared_ptr<int>> *particles = pop->get_particles();
@@ -307,7 +311,7 @@ bool test_spf(long seed)
     }
 
     double probs_T[num_latent_states];
-    for (int n = 0; n < options->num_particles; n++)
+    for (int n = 0; n < options.num_particles; n++)
     {
         int state = *particles->at(n).get();
         probs_T[state]++;
@@ -316,7 +320,7 @@ bool test_spf(long seed)
     double total_error = 0.0;
     for (int i = 0; i < num_latent_states; i++)
     {
-        probs_T[i] /= options->num_particles;
+        probs_T[i] /= options.num_particles;
         double err = abs(probs_T[i] - truth_T[i]);
         total_error += err;
         cout << "Estimated P(x_T = " << i << ") = " << probs_T[i] << endl;
@@ -368,20 +372,21 @@ bool test_smc_sampler(long seed)
     cout << "Exact log marginal: " << exact_log_marginal << endl;
 
     // run SMC and estimate the marginal likelihood
-    SMCOptions *options = new SMCOptions();
-    options->main_seed = gsl_rng_get(random);
-    options->ess_threshold = 1.0;
-    options->num_particles = 10000;
-    options->resample_last_round = true;
+    SMCOptions options;
+    options.main_seed = gsl_rng_get(random);
+    options.ess_threshold = 1.0;
+    options.num_particles = 10000;
+    options.resample_last_round = true;
 
     NormalNormalHyperParams hp(mu_0, sigma_0);
 
     // if num_iter = t, it will run for (t+1) iterations, the target for the first iteration will be the prior
     // the target for the second iteration and on will be tempered likelihod * prior
     size_t num_iter = 20;
-    auto *smc = new SMC<NormalNormalState, NormalNormalHyperParams>(new NormalNormalModel(num_iter, 8, data, sigma), options);
-    smc->run_smc(hp);
-    double smc_log_marginal = smc->get_log_marginal_likelihood();
+    NormalNormalModel model(num_iter, 8, data, sigma);
+    SMC<NormalNormalState, NormalNormalHyperParams> smc(model, options);
+    smc.run_smc(hp);
+    double smc_log_marginal = smc.get_log_marginal_likelihood();
     cout << "SMC sampler estimate: " << smc_log_marginal << endl;
     if (abs(exp(exact_log_marginal) - exp(smc_log_marginal)) > ERR_TOL) {
         cerr << "SMC sampler test failed!" << endl;
@@ -431,14 +436,15 @@ double *compare_resampling_schemes(long seed, unsigned int num_particles, unsign
         //cout << x_t << "->" << y_t << endl;
     }
     
-    SMCOptions *options = new SMCOptions();
-    options->ess_threshold = 1;
-    options->num_particles = num_particles;
-    options->resample_last_round = false;
+    SMCOptions options;
+    options.ess_threshold = 1;
+    options.num_particles = num_particles;
+    options.resample_last_round = false;
+    DiscreteHMM model(obs);
     double *vars = new double[resamplingSchemes.size()];
     for (unsigned long i = 0; i < resamplingSchemes.size(); i++) {
-        options->resampling_scheme = resamplingSchemes[i];
-        SMC<int,DiscreteHMMParams> smc(new DiscreteHMM(obs), options);
+        options.resampling_scheme = resamplingSchemes[i];
+        SMC<int,DiscreteHMMParams> smc(model, options);
         smc.run_smc(true_params);
         ParticlePopulation<int> *pop = smc.get_curr_population();
         vector<shared_ptr<int>> *particles = pop->get_particles();
@@ -448,7 +454,7 @@ double *compare_resampling_schemes(long seed, unsigned int num_particles, unsign
 
         double probs_T[num_latent_states];
         double var_T[num_latent_states];
-        for (int n = 0; n < options->num_particles; n++)
+        for (int n = 0; n < options.num_particles; n++)
         {
             int state = *particles->at(n).get();
             probs_T[state] += (*normalized_weights)[n];
@@ -469,24 +475,24 @@ double *compare_resampling_schemes(long seed, unsigned int num_particles, unsign
 void test_pmmh(long seed)
 {
     // run PMMH on beta of SVModel
-    SMCOptions *smc_options = new SMCOptions();
-    smc_options->num_particles = 200;
-    SVModel *proposal = new SVModel(sv_y);
-    ConditionalSMC<double, SVModelParams> *smc = new ConditionalSMC<double, SVModelParams>(proposal, smc_options);
-    smc->run_csmc(true_sv_params, 0);
-    double logZ = smc->get_log_marginal_likelihood();
+    SMCOptions smc_options;
+    smc_options.num_particles = 200;
+    SVModel proposal(sv_y);
+    ConditionalSMC<double, SVModelParams> smc(proposal, smc_options);
+    smc.initialize(true_sv_params);
+    double logZ = smc.get_log_marginal_likelihood();
     cout << logZ << endl; // logZ at true params
 
-    PMCMCOptions *pmcmc_options = new PMCMCOptions(seed, 50000);
-    pmcmc_options->burn_in = 5000;
-    PMMHProposal<SVModelParams> *param_proposal = new SVModelRandomWalkProposal();
+    PMCMCOptions pmcmc_options(seed, 10000);
+    pmcmc_options.burn_in = 1000;
+    SVModelRandomWalkProposal param_proposal;
     ParticleMMH<double, SVModelParams> pmmh(pmcmc_options, smc, param_proposal);
     pmmh.run();
     vector<SVModelParams *> *samples = pmmh.get_parameters();
     // compute the posterior mean for beta
     double mean = 0.0;
     size_t count = 0;
-    for (size_t i = pmcmc_options->burn_in; i < samples->size(); i+=10) {
+    for (size_t i = pmcmc_options.burn_in; i < samples->size(); i+=10) {
         mean += (*samples)[i]->beta;
         count++;
     }
@@ -497,9 +503,9 @@ void test_pmmh(long seed)
 void test_pg(long seed)
 {
     // run PG on beta of SVModel
-    SMCOptions *smc_options = new SMCOptions();
-    smc_options->num_particles = 200;
-    ProblemSpecification<double, SVModelParams> *proposal = new SVModel(sv_y);
+    SMCOptions smc_options;
+    smc_options.num_particles = 200;
+    SVModel proposal(sv_y);
     ConditionalSMC<double, SVModelParams> csmc(proposal, smc_options);
 
     PMCMCOptions pmcmc_options(seed, 4000);
@@ -510,7 +516,7 @@ void test_pg(long seed)
     
     ParticleGibbs<double, SVModelParams> pg(pmcmc_options, csmc, param_proposal);
     pg.run();
-    vector<SVModelParams *> &samples = pg.get_parameters();
+    vector<shared_ptr<SVModelParams> > &samples = pg.get_parameters();
     // compute the posterior mean for beta
     double mean = 0.0;
     size_t count = 0;
@@ -522,8 +528,20 @@ void test_pg(long seed)
     cout << mean << ", " << true_sv_params.beta << endl;
 }
 
+void test_open_mp()
+{
+    omp_set_num_threads(8);
+#pragma omp parallel
+    {
+        int ID = omp_get_thread_num();
+        printf("%i\n", ID);
+    }
+}
+
 int main()
 {
+    test_open_mp();
+
     long seed = 123;
     if (!test_smc(seed))
         return -1;

@@ -26,20 +26,22 @@ unsigned long DiscreteHMM::num_iterations()
 	return obs.size();
 }
 
-int *DiscreteHMM::propose_initial(gsl_rng *random, double &log_w, DiscreteHMMParams &params)
+shared_ptr<int> DiscreteHMM::propose_initial(gsl_rng *random, double &log_w, DiscreteHMMParams &params)
 {
 	// sample from multinomial distribution parameterized by mu
 	int *state = new int(multinomial(random, params.initial_distn));
     log_w = log(params.emission_probs[*state][obs[0]]);
-    return state;
+    shared_ptr<int> ret(state);
+    return ret;
 }
 
-int *DiscreteHMM::propose_next(gsl_rng *random, int t, const int &curr, double &log_w, DiscreteHMMParams &params)
+shared_ptr<int> DiscreteHMM::propose_next(gsl_rng *random, int t, const int &curr, double &log_w, DiscreteHMMParams &params)
 {
 	// sample from multinomial distribution parameterized by mu
 	int *state = new int(multinomial(random, params.transition_probs[curr]));
     log_w = log(params.emission_probs[*state][obs[t]]);
-    return state;
+    shared_ptr<int> ret(state);
+    return ret;
 }
 
 int DiscreteHMM::initial(gsl_rng *random, DiscreteHMMParams &params)

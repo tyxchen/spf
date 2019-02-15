@@ -27,8 +27,8 @@ class SVModel : public ProblemSpecification<double, SVModelParams>
 public:
     SVModel(vector<double> &obs);
     unsigned long num_iterations();
-    double *propose_initial(gsl_rng *random, double &log_w, SVModelParams &params);
-    double *propose_next(gsl_rng *random, int t, const double &curr, double &log_w, SVModelParams &params);
+    shared_ptr<double> propose_initial(gsl_rng *random, double &log_w, SVModelParams &params);
+    shared_ptr<double> propose_next(gsl_rng *random, int t, const double &curr, double &log_w, SVModelParams &params);
     static void generate_data(gsl_rng *random, size_t T, SVModelParams &params, vector<double> &latent, vector<double> &obs);
     ~SVModel();
 };

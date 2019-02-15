@@ -15,14 +15,14 @@ using namespace std;
 template <class S>
 class ParticleGenealogy
 {
-    vector<shared_ptr<S>> state_genealogy;
+    vector<shared_ptr<S> > state_genealogy;
     vector<double> log_weights_genealogy;
 public:
     ParticleGenealogy();
-    size_t size();
+    size_t size() const;
     void set(shared_ptr<S> state, double log_w);
-    const S &get_state_at(size_t r);
-    double get_log_weight_at(size_t r);
+    const S &get_state_at(size_t r) const;
+    double get_log_weight_at(size_t r) const;
     shared_ptr<S> get_state_ptr_at(size_t r);
 };
 
@@ -33,7 +33,7 @@ ParticleGenealogy<S>::ParticleGenealogy()
 }
 
 template <class S>
-size_t ParticleGenealogy<S>::size()
+size_t ParticleGenealogy<S>::size() const
 {
     return state_genealogy.size();
 }
@@ -46,13 +46,13 @@ void ParticleGenealogy<S>::set(shared_ptr<S> state, double log_w)
 }
 
 template <class S>
-const S &ParticleGenealogy<S>::get_state_at(size_t r)
+const S &ParticleGenealogy<S>::get_state_at(size_t r) const
 {
     return *state_genealogy[r].get();
 }
 
 template <class S>
-double ParticleGenealogy<S>::get_log_weight_at(size_t r)
+double ParticleGenealogy<S>::get_log_weight_at(size_t r) const
 {
     return log_weights_genealogy[r];
 }

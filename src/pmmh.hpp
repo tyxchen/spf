@@ -29,50 +29,48 @@ using namespace std;
 
 template <class S, class P> class ParticleMMH
 {
-    PMCMCOptions *options;
-    ConditionalSMC<S, P> *smc;
-    PMMHProposal<P> *param_proposal;
+    PMCMCOptions &options;
+    PMMHProposal<P> &param_proposal;
+    ConditionalSMC<S, P> &smc;
     vector<P*> *parameters;
-    vector<ParticleGenealogy<S> *> *states;
+    vector<shared_ptr<ParticleGenealogy<S> > > *states;
 public:
-    ParticleMMH(PMCMCOptions *options, ConditionalSMC<S, P> *smc, PMMHProposal<P> *param_proposal);
+    ParticleMMH(PMCMCOptions &options, ConditionalSMC<S, P> &smc, PMMHProposal<P> &param_proposal);
     void run();
     vector<P*> *get_parameters();
 };
 
 template <class S, class P>
-ParticleMMH<S,P>::ParticleMMH(PMCMCOptions *options, ConditionalSMC<S, P> *smc, PMMHProposal<P> *param_proposal)
+ParticleMMH<S,P>::ParticleMMH(PMCMCOptions &options, ConditionalSMC<S, P> &smc, PMMHProposal<P> &param_proposal) :
+options(options), param_proposal(param_proposal), smc(smc)
 {
-    this->options = options;
-    this->smc = smc;
-    this->param_proposal = param_proposal;
     this->parameters = new vector<P*>();
-    this->states = new vector<ParticleGenealogy<S> *>();
+    this->states = new vector<shared_ptr<ParticleGenealogy<S> > >();
 }
 
 template <class S, class P>
 void ParticleMMH<S,P>::run()
 {
     // initialize the parameters
-    P *param_curr = param_proposal->sample_from_prior(options->random);
+    P *param_curr = param_proposal.sample_from_prior(options.random);
     P *param_new = 0;
 
-    ParticleGenealogy<S> *new_state = 0;
+    shared_ptr<ParticleGenealogy<S> > new_state = 0;
 
     // initialize
-    ParticleGenealogy<S> *curr_state = smc->run_csmc(*param_curr, 0);
+    shared_ptr<ParticleGenealogy<S> > curr_state = smc.initialize(*param_curr);
 
-    double log_Z_old = smc->get_log_marginal_likelihood();
+    double log_Z_old = smc.get_log_marginal_likelihood();
     double log_Z_curr = 0;
     double log_accept_ratio = 0.0;
     double unif = 0.0;
     double max_log_z = DOUBLE_NEG_INF;
     size_t num_accepts = 0;
     size_t num_iters = 1;
-    for (size_t i = 0; i < options->num_iterations; i++)
+    for (size_t i = 0; i < options.num_iterations; i++)
     {
-        if (num_iters % 100 == 0 && i < options->burn_in) {
-            param_proposal->adapt(num_accepts, num_iters-1);
+        if (num_iters % 100 == 0 && i < options.burn_in) {
+            param_proposal.adapt(num_accepts, num_iters-1);
             num_accepts = 0;
             num_iters = 1;
         }
@@ -81,21 +79,21 @@ void ParticleMMH<S,P>::run()
 
         // propose new param: proposal can be quite general
         // as it can combine Gibbs sampling and form MH within MH
-        param_new = param_proposal->propose(options->random, param_curr);
+        param_new = param_proposal.propose(options.random, param_curr);
 
         // check that the param_new is in the support
-        if (param_proposal->log_prior(param_new) == DOUBLE_NEG_INF) {
+        if (param_proposal.log_prior(param_new) == DOUBLE_NEG_INF) {
             continue;
         }
 
         // run SMC
-        new_state = smc->run_csmc(*param_new, 0);
-        log_Z_curr = smc->get_log_marginal_likelihood();
+        new_state = smc.initialize(*param_new);
+        log_Z_curr = smc.get_log_marginal_likelihood();
 
         // compute the acceptance probability
-        log_accept_ratio = (log_Z_curr - log_Z_old) + (param_proposal->log_proposal(param_curr, param_new) - param_proposal->log_proposal(param_new, param_curr)) + (param_proposal->log_prior(param_new) - param_proposal->log_prior(param_curr));
+        log_accept_ratio = (log_Z_curr - log_Z_old) + (param_proposal.log_proposal(param_curr, param_new) - param_proposal.log_proposal(param_new, param_curr)) + (param_proposal.log_prior(param_new) - param_proposal.log_prior(param_curr));
 
-        unif = log(uniform(options->random));
+        unif = log(uniform(options.random));
         if (unif < log_accept_ratio) {
             num_accepts++;
             // accept

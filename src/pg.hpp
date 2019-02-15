@@ -30,14 +30,14 @@ template <class S, class P> class ParticleGibbs
     PMCMCOptions &options;
     ConditionalSMC<S, P> &csmc;
     PGProposal<S, P> &param_proposal;
-    vector<P*> parameters;
-    vector<ParticleGenealogy<S> *> states; // store the genealogy along with the log weights
+    vector<shared_ptr<P> > parameters;
+    vector<shared_ptr<ParticleGenealogy<S> > > states; // store the genealogy along with the log weights
 
 public:
     ParticleGibbs(PMCMCOptions &options, ConditionalSMC<S, P> &smc, PGProposal<S, P> &param_proposal);
     void run();
-    vector<P*> &get_parameters();
-    vector<ParticleGenealogy<S> *> &get_states();
+    vector<shared_ptr<P> > &get_parameters();
+    vector<shared_ptr<ParticleGenealogy<S> > > &get_states();
     ~ParticleGibbs();
 };
 
@@ -51,9 +51,9 @@ template <class S, class P>
 void ParticleGibbs<S,P>::run()
 {
     // initialize the parameters
-    P *param = param_proposal.sample_from_prior(options.random);
+    shared_ptr<P> param = param_proposal.sample_from_prior(options.random);
     // initialize state
-    ParticleGenealogy<S> *genealogy = 0;
+    shared_ptr<ParticleGenealogy<S> > genealogy;
 
     double log_Z = 0.0;
     double max_log_z = DOUBLE_NEG_INF;
@@ -79,7 +79,7 @@ void ParticleGibbs<S,P>::run()
         // propose new param: proposal can be quite general
         // as it can combine Gibbs sampling and form MH within MH
         // but it is always accepted
-        param = param_proposal.propose(options.random, param, genealogy);
+        param = param_proposal.propose(options.random, *param.get(), genealogy);
 
         parameters.push_back(param);
         states.push_back(genealogy);
@@ -87,13 +87,13 @@ void ParticleGibbs<S,P>::run()
 }
 
 template <class S, class P>
-vector<P*> &ParticleGibbs<S,P>::get_parameters()
+vector<shared_ptr<P> > &ParticleGibbs<S,P>::get_parameters()
 {
     return parameters;
 }
 
 template <class S, class P>
-vector<ParticleGenealogy<S> *> &ParticleGibbs<S,P>::get_states()
+vector<shared_ptr<ParticleGenealogy<S> > > &ParticleGibbs<S,P>::get_states()
 {
     return states;
 }

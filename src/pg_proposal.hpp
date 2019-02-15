@@ -16,9 +16,9 @@ template <class S, class P>
 class PGProposal
 {
 public:
-    virtual P *sample_from_prior(gsl_rng *random) = 0;
-    virtual P *propose(gsl_rng *random, P *curr, ParticleGenealogy<S> *genealogy) = 0;
-    virtual double log_prior(P *curr) = 0; // log p(curr)
+    virtual shared_ptr<P> sample_from_prior(gsl_rng *random) = 0;
+    virtual shared_ptr<P> propose(gsl_rng *random, const P &curr, shared_ptr<ParticleGenealogy<S> > genealogy) = 0;
+    virtual double log_prior(const P &curr) = 0; // log p(curr)
 };
 
 #endif /* pg_proposal_h */
