@@ -1,6 +1,6 @@
 language: cpp
 compiler:
-  - llvm
+  - clang
 os: osx
 osx_image: xcode10.1
 dist: trusty
