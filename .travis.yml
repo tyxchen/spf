@@ -1,6 +1,6 @@
 language: cpp
 compiler:
-  - gcc
+  - llvm
 os: osx
 osx_image: xcode10.1
 dist: trusty
@@ -10,6 +10,7 @@ addons:
       - cmake
       - gsl
       - boost
+      - libomp
 script:
   - mkdir build
   - cd build
