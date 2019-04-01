@@ -12,6 +12,9 @@
 
 #include <memory>
 #include <vector>
+
+#include <omp.h>
+
 #include <gsl/gsl_rng.h>
 
 #include "numerical_utils.hpp"
@@ -101,8 +104,9 @@ ParticlePopulation<S> *SMC<S,P>::propose(gsl_rng *random, ParticlePopulation<S> 
 
     double log_norm = DOUBLE_NEG_INF;
     double log_Z_ratio = DOUBLE_NEG_INF;
-    double log_prev_w = -log(num_proposals);
-    for (int n = 0; n < num_proposals; n++)
+    const double log_n_proposals = -log(num_proposals);
+    
+    for (size_t n = 0; n < num_proposals; n++)
     {
         if (pop == 0) {
             new_particles->push_back(proposal.propose_initial(random, (*new_log_weights)[n], params));
@@ -111,6 +115,7 @@ ParticlePopulation<S> *SMC<S,P>::propose(gsl_rng *random, ParticlePopulation<S> 
             new_particles->push_back(proposal.propose_next(random, iter, parent, (*new_log_weights)[n], params));
         }
 
+        double log_prev_w = log_n_proposals;
         if (is_resampled) {
             log_Z_ratio = log_add(log_Z_ratio, (*new_log_weights)[n] + log_prev_w);
         } else {
@@ -118,9 +123,9 @@ ParticlePopulation<S> *SMC<S,P>::propose(gsl_rng *random, ParticlePopulation<S> 
             log_Z_ratio = log_add(log_Z_ratio, (*new_log_weights)[n] + log_prev_w - pop->get_log_norm());
         }
         (*new_log_weights)[n] += log_prev_w;
-
         log_norm = log_add(log_norm, new_log_weights->at(n));
     }
+
     // note: log_norm is an approximation of Z_t/Z_{t-1}
     ParticlePopulation<S> *new_pop = new ParticlePopulation<S>(new_particles, new_log_weights, log_norm, log_Z_ratio);
     return new_pop;

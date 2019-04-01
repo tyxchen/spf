@@ -24,7 +24,7 @@ public:
     double ess_threshold = 0.5;
     bool track_population = false;
     bool resample_last_round = false;
-    bool use_sPF = false;
+    bool use_SPF = false;
     bool debug = false;
 
     long main_seed = 1;
@@ -33,8 +33,7 @@ public:
     gsl_rng *main_random = 0;
     gsl_rng *resampling_random = 0;
 
-    // TODO: implement multi-threading and GPU computation
-    // unsigned int num_threads = 4;
+    unsigned int num_threads = 1;
     
     void init();
 };

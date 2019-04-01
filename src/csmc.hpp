@@ -25,8 +25,8 @@ class ConditionalSMC
     ProblemSpecification<S, P> &proposal;
 
     double log_marginal_likelihood = 0;
-    double propose(gsl_rng *random, P &params, unsigned int r, const shared_ptr<ParticleGenealogy<S> > &genealogy);
-    void resample(gsl_rng *random, unsigned int r, bool fix_last_genealogy, double log_norm);
+    double propose(gsl_rng *random, P &params, const unsigned int r, const shared_ptr<ParticleGenealogy<S> > &genealogy);
+    void resample(gsl_rng *random, const unsigned int r, bool fix_last_genealogy, double log_norm);
     shared_ptr<ParticleGenealogy<S> > sample_genealogy(const gsl_rng *random);
     double compute_ess(vector<double> &probs);
 
@@ -98,10 +98,9 @@ shared_ptr<ParticleGenealogy<S> > ConditionalSMC<S,P>::run_csmc(P &params, share
 }
 
 template <class S, class P>
-double ConditionalSMC<S,P>::propose(gsl_rng *random, P &params, unsigned int r, const shared_ptr<ParticleGenealogy<S> > &genealogy)
+double ConditionalSMC<S,P>::propose(gsl_rng *random, P &params, const unsigned int r, const shared_ptr<ParticleGenealogy<S> > &genealogy)
 {
     unsigned int N = genealogy == nullptr ? options.num_particles : options.num_particles - 1;
-    unsigned int parent_idx = 0;
     double log_norm = DOUBLE_NEG_INF;
 
     // invariant condition: particle_weight_pairs.size() == r or == R
@@ -112,18 +111,53 @@ double ConditionalSMC<S,P>::propose(gsl_rng *random, P &params, unsigned int r, 
 
     vector<shared_ptr<S> > &particles_at_r = particles[r];
     vector<double> &log_w = log_weights[r];
-
+    
     for (size_t k = 0; k < N; k++)
     {
         if (r == 0) {
             particles_at_r[k] = proposal.propose_initial(random, log_w[k], params);
         } else {
-            parent_idx = ancestors[r-1][k];
+            unsigned int parent_idx = ancestors[r-1][k];
             S *parent_particle = particles[r-1].at(parent_idx).get();
             particles_at_r[k] = proposal.propose_next(random, r, *parent_particle, log_w[k], params);
         }
+    }
+
+// parallelize proposal step
+//    vector<unsigned long> seeds;
+//    for (size_t i = 0; i < options.num_threads; i++) {
+//        seeds.push_back(gsl_rng_get(random));
+//    }
+//
+//    omp_set_num_threads(options.num_threads);
+//#pragma omp parallel
+//    {
+//        size_t id = omp_get_thread_num();
+//        size_t num_threads = omp_get_num_threads();
+//        //printf("%ld / %ld\n", (id+1), num_threads);
+//        gsl_rng *thread_rand = generate_random_object(seeds[id]);
+//        size_t start_idx = id * N/num_threads;
+//        size_t end_idx = (id + 1) * N/num_threads;
+//        if (id == num_threads - 1) {
+//            end_idx = N;
+//        }
+//#pragma omp for
+//        for (size_t k = start_idx; k < end_idx; k++)
+//        {
+//            if (r == 0) {
+//                particles_at_r[k] = proposal.propose_initial(thread_rand, log_w[k], params);
+//            } else {
+//                unsigned int parent_idx = ancestors[r-1][k];
+//                S *parent_particle = particles[r-1].at(parent_idx).get();
+//                particles_at_r[k] = proposal.propose_next(thread_rand, r, *parent_particle, log_w[k], params);
+//            }
+//        }
+//    }
+
+    for (size_t k = 0; k < N; k++) {
         log_norm = log_add(log_norm, log_w[k]);
     }
+
     if (genealogy != nullptr) {
         // the last particle is to be fixed by the given genealogy
         particles_at_r[N] = genealogy.get()->get_state_ptr_at(r);
@@ -136,7 +170,7 @@ double ConditionalSMC<S,P>::propose(gsl_rng *random, P &params, unsigned int r, 
 
 // currently supports only multinomial resampling
 template <class S, class P>
-void ConditionalSMC<S,P>::resample(gsl_rng *random, unsigned int r, bool fix_last_genealogy, double log_norm)
+void ConditionalSMC<S,P>::resample(gsl_rng *random, const unsigned int r, bool fix_last_genealogy, double log_norm)
 {
     unsigned int N = options.num_particles;
 

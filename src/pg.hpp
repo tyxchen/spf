@@ -31,11 +31,13 @@ template <class S, class P> class ParticleGibbs
     ConditionalSMC<S, P> &csmc;
     PGProposal<S, P> &param_proposal;
     vector<shared_ptr<P> > parameters;
+    vector<double > log_marginal_likelihoods;
     vector<shared_ptr<ParticleGenealogy<S> > > states; // store the genealogy along with the log weights
 
 public:
     ParticleGibbs(PMCMCOptions &options, ConditionalSMC<S, P> &smc, PGProposal<S, P> &param_proposal);
     void run();
+    vector<double > &get_log_marginal_likelihoods();
     vector<shared_ptr<P> > &get_parameters();
     vector<shared_ptr<ParticleGenealogy<S> > > &get_states();
     ~ParticleGibbs();
@@ -67,6 +69,7 @@ void ParticleGibbs<S,P>::run()
             genealogy = csmc.run_csmc(*param, genealogy);
         }
         log_Z = csmc.get_log_marginal_likelihood();
+        log_marginal_likelihoods.push_back(log_Z);
         if (options.verbose)
             cout << "logZ: " << log_Z << endl;
 
@@ -84,6 +87,12 @@ void ParticleGibbs<S,P>::run()
         parameters.push_back(param);
         states.push_back(genealogy);
     }
+}
+
+template <class S, class P>
+vector<double > &ParticleGibbs<S,P>::get_log_marginal_likelihoods()
+{
+    return log_marginal_likelihoods;
 }
 
 template <class S, class P>

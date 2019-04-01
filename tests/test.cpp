@@ -216,24 +216,31 @@ bool test_smc(long seed)
     return true;
 }
 
-bool test_csmc(long seed)
+bool test_csmc(long seed, size_t num_threads)
 {
     cout << "=====Testing conditional SMC=====" << endl;
     SMCOptions options;
     options.main_seed = seed;
     options.resampling_seed = seed+123;
     options.ess_threshold = 1;
-    options.num_particles = 10000;
+    options.num_particles = 100000;
+    options.num_threads = num_threads;
 
     DiscreteHMM model(y);
     ConditionalSMC<int, DiscreteHMMParams> csmc(model, options);
     shared_ptr<ParticleGenealogy<int>> genealogy = csmc.initialize(true_params);
     double logZ = csmc.get_log_marginal_likelihood();
+
+    auto start = std::chrono::high_resolution_clock::now();
     for (size_t num_iter = 0; num_iter < 20; num_iter++) {
         genealogy = csmc.run_csmc(true_params, genealogy);
         logZ = csmc.get_log_marginal_likelihood();
         //cout << logZ << endl;
     }
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    cout << elapsed.count() << " seconds with " << num_threads << " threads." << endl;
+
     unsigned int r = 2;
     vector<int> particles;
 //    vector<double> *log_weights = csmc.get_log_weights(r);
@@ -540,14 +547,16 @@ void test_open_mp()
 
 int main()
 {
-    test_open_mp();
+//    test_open_mp();
 
     long seed = 123;
     if (!test_smc(seed))
         return -1;
     if (!test_spf(seed))
         return -1;
-    if (!test_csmc(seed))
+    if (!test_csmc(seed, 8))
+        return -1;
+    if (!test_csmc(seed, 1))
         return -1;
     if (!test_smc_sampler(seed))
         return -1;
