@@ -27,7 +27,7 @@ cd build
 cmake ..
 make install
 ```
-The last line will install `libSPF.a` to /usr/local/bin` and header files to `/usr/local/include/spf`.
+The last line will install `libSPF.a` to /usr/local/bin` and header files to `/usr/local/include/spf`. Specify prefix for installation: `make DESTDIR=/home/username/ install', which will place the files into `/home/username/usr/local/bin` and `/home/username/usr/local/include/spf'.
 
 # Usage
 Example usage can be found under `tests/` directory with `DiscreteHMM` and `SVModel`. Additionally, `tests/test.cpp` contains example code.
