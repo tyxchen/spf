@@ -8,6 +8,7 @@
 #ifndef particle_genealogy_hpp
 #define particle_genealogy_hpp
 
+#include <memory>
 #include <vector>
 
 using namespace std;

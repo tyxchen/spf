@@ -5,7 +5,7 @@
  *      Author: seonghwanjun
  */
 
-#include <math.h>
+#include <cmath>
 #include <gsl/gsl_sf.h>
 
 #include "numerical_utils.hpp"
