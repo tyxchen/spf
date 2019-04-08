@@ -2,7 +2,7 @@ file( GLOB SRCS *.cpp *.hpp)
 add_library(SPF STATIC ${SRCS})
 
 find_package (PkgConfig REQUIRED)
-find_package(Boost 1.66 COMPONENTS regex  REQUIRED)
+find_package(Boost 1.67 COMPONENTS regex  REQUIRED)
 find_package (GSL REQUIRED)
 target_link_libraries(SPF GSL::gsl GSL::gslcblas)
 if(Boost_FOUND)
