@@ -161,7 +161,9 @@ double ConditionalSMC<S,P>::propose(gsl_rng *random, P &params, const unsigned i
     if (genealogy != nullptr) {
         // the last particle is to be fixed by the given genealogy
         particles_at_r[N] = genealogy.get()->get_state_ptr_at(r);
-        log_w[N] = genealogy.get()->get_log_weight_at(r);
+        // TODO: this is potentially problematic within PG framework
+        // the parameters from the last iteration have changed and hence, the likelihood
+        log_w[N] = proposal.log_weight(r, *particles_at_r[N].get(), params);
         log_norm = log_add(log_norm, log_w[N]);
     }
 

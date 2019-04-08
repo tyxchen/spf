@@ -35,13 +35,18 @@ shared_ptr<int> DiscreteHMM::propose_initial(gsl_rng *random, double &log_w, Dis
     return ret;
 }
 
-shared_ptr<int> DiscreteHMM::propose_next(gsl_rng *random, int t, const int &curr, double &log_w, DiscreteHMMParams &params)
+shared_ptr<int> DiscreteHMM::propose_next(gsl_rng *random, unsigned int t, const int &curr, double &log_w, DiscreteHMMParams &params)
 {
 	// sample from multinomial distribution parameterized by mu
 	int *state = new int(multinomial(random, params.transition_probs[curr]));
-    log_w = log(params.emission_probs[*state][obs[t]]);
+    log_w = log_weight(t, *state, params);
     shared_ptr<int> ret(state);
     return ret;
+}
+
+double DiscreteHMM::log_weight(unsigned int t, const int &state, const DiscreteHMMParams &params)
+{
+    return log(params.emission_probs[state][obs[t]]);
 }
 
 int DiscreteHMM::initial(gsl_rng *random, DiscreteHMMParams &params)

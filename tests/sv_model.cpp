@@ -28,11 +28,16 @@ shared_ptr<double> SVModel::propose_initial(gsl_rng *random, double &log_w, SVMo
     return shared_ptr<double>(x1);
 }
 
-shared_ptr<double> SVModel::propose_next(gsl_rng *random, int t, const double &curr, double &log_w, SVModelParams &params)
+shared_ptr<double> SVModel::propose_next(gsl_rng *random, unsigned int t, const double &curr, double &log_w, SVModelParams &params)
 {
     double *xt = new double(params.phi * curr + gsl_ran_gaussian(random, params.sigma));
     log_w = log(gsl_ran_gaussian_pdf(obs[t], sqrt(exp(*xt)) * params.beta));
     return shared_ptr<double>(xt);
+}
+
+double SVModel::log_weight(unsigned int t, const double &state, const SVModelParams &params)
+{
+    return log(gsl_ran_gaussian_pdf(obs[t], sqrt(exp(state)) * params.beta));
 }
 
 void SVModel::generate_data(gsl_rng *random, size_t T, SVModelParams &params, vector<double> &latent, vector<double> &obs)

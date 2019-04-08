@@ -54,9 +54,9 @@ void normalize(vector<double> &log_weights, vector<double> &weights, double log_
         weights[i] = exp(log_weights[i] - log_norm);
         sum += weights[i];
     }
-    if (abs(sum - 1.0) > 1e-4) {
+    if (abs(sum - 1.0) > 1e-6) {
         cerr << "Error in normalization. Check that log_weights and log_norm are correctly calculated." << endl;
-        cerr << ceil(sum*100000)/100000.0 << " != 1.0" << endl;
+        cerr << sum << " != 1.0" << endl;
         cerr << "log_norm: " << log_norm << endl;
         exit(-1);
     }
