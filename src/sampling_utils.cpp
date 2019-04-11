@@ -28,7 +28,7 @@ gsl_rng* generate_random_object(long seed)
     
 }
 
-unsigned int multinomial(const gsl_rng *random, vector<double> normalized_probs)
+unsigned int multinomial(const gsl_rng *random, vector<double> &normalized_probs)
 {
     double u = gsl_rng_uniform(random);
     double sum = 0.0;
@@ -104,14 +104,14 @@ double uniform(const gsl_rng *random, double lower, double upper)
     return u;
 }
 
-void multinomial(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *result)
+void multinomial(const gsl_rng *random, unsigned int N, vector<double> &normalized_probs, unsigned int *result)
 {
     double probs[normalized_probs.size()];
     std::copy(normalized_probs.begin(), normalized_probs.end(), probs);
     gsl_ran_multinomial(random, N, N, probs, result);
 }
 
-int multinomial(const gsl_rng *random, vector<double> unnormalized_probs, double norm)
+int multinomial(const gsl_rng *random, vector<double> &unnormalized_probs, double norm)
 {
     double u = gsl_rng_uniform(random);
     double sum = 0.0;
@@ -127,7 +127,7 @@ int multinomial(const gsl_rng *random, vector<double> unnormalized_probs, double
     return -1;
 }
 
-void multinomial_sample_indices(const gsl_rng *random, unsigned int N, vector<double> normalized_probs, unsigned int *indices)
+void multinomial_sample_indices(const gsl_rng *random, unsigned int N, const vector<double> &normalized_probs, unsigned int *indices)
 {
     // draw N uniform values
     double *uvec = new double[N];
