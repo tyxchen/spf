@@ -14,7 +14,6 @@
 #include "numerical_utils.hpp"
 #include "particle_genealogy.hpp"
 #include "resampling.hpp"
-#include "sampling_utils.hpp"
 #include "smc_model.hpp"
 #include "smc_options.hpp"
 

@@ -15,9 +15,9 @@
 
 using namespace std;
 
-const double DOUBLE_INF = std::numeric_limits<double>::infinity();
-const double DOUBLE_NEG_INF = -std::numeric_limits<double>::infinity();
-const double NaN = std::numeric_limits<double>::quiet_NaN();
+extern const double DOUBLE_INF;
+extern const double DOUBLE_NEG_INF;
+extern const double NaN;
 
 // returns log sum as by-product
 double log_binomial_pdf(const unsigned int k, const double p, const unsigned int n);

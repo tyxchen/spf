@@ -10,6 +10,10 @@
 
 #include "numerical_utils.hpp"
 
+const double DOUBLE_INF = std::numeric_limits<double>::infinity();
+const double DOUBLE_NEG_INF = -std::numeric_limits<double>::infinity();
+const double NaN = std::numeric_limits<double>::quiet_NaN();
+
 double log_binomial_pdf(const unsigned int k, const double p, const unsigned int n)
 {
     if (k > n)

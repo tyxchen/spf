@@ -13,8 +13,6 @@
 #include <memory>
 #include <utility>
 
-#include "particle.hpp"
-
 template <class S, class P> class ProblemSpecification
 {
 public:

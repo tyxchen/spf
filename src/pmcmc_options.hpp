@@ -19,13 +19,9 @@ public:
     gsl_rng *random;
     size_t num_iterations;
     PMCMCOptions(long seed, size_t num_iter);
+    
+    ~PMCMCOptions();
 };
-
-PMCMCOptions::PMCMCOptions(long seed, size_t num_iter)
-{
-    this->random = generate_random_object(seed);
-    this->num_iterations = num_iter;
-}
 
 #endif /* pmcmc_options_h */
 

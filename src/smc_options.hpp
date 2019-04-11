@@ -9,6 +9,8 @@
 #ifndef smc_options_h
 #define smc_options_h
 
+#include <gsl/gsl_rng.h>
+
 class SMCOptions
 {
 public:
@@ -36,16 +38,7 @@ public:
     unsigned int num_threads = 1;
     
     void init();
+    ~SMCOptions();
 };
-
-void SMCOptions::init()
-{
-    if (main_random == 0) {
-        main_random = generate_random_object(main_seed);
-    }
-    if (resampling_random == 0) {
-        resampling_random = generate_random_object(resampling_seed);
-    }
-}
 
 #endif /* smc_options_h */

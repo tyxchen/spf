@@ -8,20 +8,15 @@
 #ifndef pg_h
 #define pg_h
 
-#include <math.h>
+#include <cmath>
 #include <vector>
+
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
 
-#include "numerical_utils.hpp"
-#include "particle_population.hpp"
 #include "pg_proposal.hpp"
 #include "pmcmc_options.hpp"
-#include "resampling.hpp"
 #include "csmc.hpp"
-#include "smc_model.hpp"
-#include "smc_options.hpp"
-#include "sampling_utils.hpp"
 
 using namespace std;
 
