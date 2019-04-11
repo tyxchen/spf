@@ -8,6 +8,8 @@ cmake_minimum_required (VERSION 3.12)
 
 set(CMAKE_CXX_FLAGS "-std=c++11")
 set(CMAKE_C_FLAGS "-Wall -g" )
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fpic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic")
 
 if (APPLE)
 	set(OPENMP_CXX_INCLUDE_DIRS /usr/local/opt/libomp/include)

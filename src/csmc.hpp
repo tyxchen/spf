@@ -13,6 +13,7 @@
 
 #include "numerical_utils.hpp"
 #include "particle_genealogy.hpp"
+#include "sampling_utils.hpp"
 #include "resampling.hpp"
 #include "smc_model.hpp"
 #include "smc_options.hpp"

@@ -9,6 +9,8 @@
 #ifndef particle_population_h
 #define particle_population_h
 
+#include <memory>
+
 #include <gsl/gsl_rng.h>
 #include <math.h>
 

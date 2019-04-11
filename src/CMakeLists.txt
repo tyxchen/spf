@@ -1,5 +1,6 @@
 file( GLOB SRCS *.cpp *.hpp)
 add_library(SPF STATIC ${SRCS})
+#add_library(SPF SHARED ${SRCS})
 
 find_package (PkgConfig REQUIRED)
 find_package(Boost 1.67 COMPONENTS regex  REQUIRED)

@@ -9,6 +9,7 @@
 #ifndef resampling_h
 #define resampling_h
 
+#include <algorithm>
 #include <cmath>
 #include <vector>
 
