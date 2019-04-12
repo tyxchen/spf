@@ -37,12 +37,12 @@ double log_binomial_pdf(const unsigned int k, const double p, const unsigned int
             double ln_Cnk = gsl_sf_lnchoose (n, k);
             logP = ln_Cnk + k * log (p) + (n - k) * log1p(-p);
         }
-        
+
         return logP;
     }
 }
 
-double normalize(vector<double> &log_weights, vector<double> &weights)
+double normalize(const vector<double> &log_weights, vector<double> &weights)
 {
     // compute the lognorm
     double log_norm = log_add(log_weights);
@@ -50,7 +50,7 @@ double normalize(vector<double> &log_weights, vector<double> &weights)
     return log_norm;
 }
 
-void normalize(vector<double> &log_weights, vector<double> &weights, double log_norm)
+void normalize(const vector<double> &log_weights, vector<double> &weights, double log_norm)
 {
     double sum = 0.0;
     for (unsigned int i = 0; i < log_weights.size(); i++)
@@ -185,4 +185,12 @@ void multiply(double *x, double c, double *ret, size_t size)
     }
 }
 
+template <typename T>
+void print_vector(const vector<T> &v)
+{
+    for (int i = 0; i < v.size(); i++)
+    {
+        cout << v[i] << " ";
+    }
+}
 

@@ -21,8 +21,8 @@ extern const double NaN;
 
 // returns log sum as by-product
 double log_binomial_pdf(const unsigned int k, const double p, const unsigned int n);
-double normalize(vector<double> &log_weights, vector<double> &weights);
-void normalize(vector<double> &log_weights, vector<double> &weights, double log_norm);
+double normalize(const vector<double> &log_weights, vector<double> &weights);
+void normalize(const vector<double> &log_weights, vector<double> &weights, double log_norm);
 void normalize_destructively(vector<double> &log_weights, double log_norm);
 double normalize_destructively(vector<double> &log_weights);
 double normalize_destructively(double *log_weights, int size);
@@ -34,12 +34,6 @@ void add(double *x, double c, size_t size);
 void multiply(double *x, double c, double *ret, size_t size);
 
 template <typename T>
-void print_vector(const vector<T> &v)
-{
-    for (int i = 0; i < v.size(); i++)
-    {
-        cout << v[i] << " ";
-    }
-}
+void print_vector(const vector<T> &v);
 
 #endif /* SRC_NUMERICAL_UTILS_HPP_ */

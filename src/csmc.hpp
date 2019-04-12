@@ -15,6 +15,7 @@
 #include "particle_genealogy.hpp"
 #include "sampling_utils.hpp"
 #include "resampling.hpp"
+#include "sampling_utils.hpp"
 #include "smc_model.hpp"
 #include "smc_options.hpp"
 
@@ -93,6 +94,8 @@ shared_ptr<ParticleGenealogy<S> > ConditionalSMC<S,P>::run_csmc(P &params, share
             resample(options.resampling_random, r, genealogy != nullptr, log_norm);
     }
 
+    // callback on the model, pass the particles
+    
     // sample genealogy
     return sample_genealogy(options.resampling_random);
 }
@@ -167,6 +170,8 @@ double ConditionalSMC<S,P>::propose(gsl_rng *random, P &params, const unsigned i
         log_norm = log_add(log_norm, log_w[N]);
     }
 
+    proposal.set_particle_population(particles, log_weights, log_norms);
+
     return log_norm;
 }
 
@@ -206,10 +211,10 @@ shared_ptr<ParticleGenealogy<S> > ConditionalSMC<S,P>::sample_genealogy(const gs
     normalize(log_weights[R-1], probs, log_norms[R-1]);
     unsigned int idx = multinomial(random, probs);
 
-    ParticleGenealogy<S> *genealogy = new ParticleGenealogy<S>();
+    ParticleGenealogy<S> *genealogy = new ParticleGenealogy<S>(R);
     for (size_t r = 0; r < R; r++) {
         size_t curr_iter = R - r - 1;
-        genealogy->set(particles[curr_iter].at(idx), log_weights[curr_iter].at(idx));
+        genealogy->set(curr_iter, particles[curr_iter].at(idx), log_weights[curr_iter].at(idx));
         if (curr_iter > 0) {
             idx = ancestors[curr_iter-1][idx];
         }

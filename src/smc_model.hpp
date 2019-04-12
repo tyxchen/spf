@@ -12,6 +12,9 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
+
+using namespace std;
 
 template <class S, class P> class ProblemSpecification
 {
@@ -34,6 +37,10 @@ public:
     // current state is not to be modified -- template class S should provide const functions so that necessary components can be accessed
     virtual std::shared_ptr<S> propose_next(gsl_rng *random, unsigned int t, const S &curr, double &logw, P &params) = 0;
     virtual double log_weight(unsigned int t, const S &s, const P &p) = 0;
+
+    // call back function, called by CSMC: user can sharpen the proposal using the sampled particles and log_weights if desired
+    // can be useful for sharpening the proposal distribution
+    void set_particle_population(const vector<vector<shared_ptr<S> > > &particles, const vector<vector<double> > &log_weights, const vector<double> &log_norms) { }
     virtual ~ProblemSpecification() { }
 };
 
