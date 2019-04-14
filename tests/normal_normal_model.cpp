@@ -38,7 +38,8 @@ shared_ptr<NormalNormalState> NormalNormalModel::propose_initial(gsl_rng *random
 shared_ptr<NormalNormalState> NormalNormalModel::propose_next(gsl_rng *random, unsigned int t, const NormalNormalState &curr, double &log_w, NormalNormalHyperParams &params)
 {
     NormalNormalState *new_state = new NormalNormalState(curr.get_mu(), curr.get_sigma());
-    log_w = log_weight(t, curr, params);
+    double temperature_diff = get_temperature(t+1, num_iter) - get_temperature(t, num_iter);
+    log_w = temperature_diff * compute_log_lik(data, curr.get_mu(), sigma);
 
     for (size_t i = 0; i < num_mh_iter; i++) {
         double mu_star = gsl_ran_gaussian(random, 0.7) + new_state->get_mu();
@@ -56,10 +57,11 @@ shared_ptr<NormalNormalState> NormalNormalModel::propose_next(gsl_rng *random, u
     return ret;
 }
 
-double NormalNormalModel::log_weight(unsigned int t, const NormalNormalState &state, const NormalNormalHyperParams &params)
+double NormalNormalModel::log_weight(unsigned int t, const shared_ptr<ParticleGenealogy<NormalNormalState> > &genealogy, const NormalNormalHyperParams &params)
 {
     double temperature_diff = get_temperature(t+1, num_iter) - get_temperature(t, num_iter);
-    return temperature_diff * compute_log_lik(data, state.get_mu(), sigma);
+    double mu = genealogy->get_state_ptr_at(t)->get_mu();
+    return temperature_diff * compute_log_lik(data, mu, sigma);
 }
 
 double NormalNormalModel::get_temperature(double t, size_t num_iter)

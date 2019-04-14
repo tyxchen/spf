@@ -27,7 +27,7 @@ public:
     unsigned long num_iterations();
     shared_ptr<int> propose_initial(gsl_rng *random, double &log_w, DiscreteHMMParams &params);
     shared_ptr<int> propose_next(gsl_rng *random, unsigned int t, const int &curr, double &log_w, DiscreteHMMParams &params);
-    double log_weight(unsigned int t, const int &s, const DiscreteHMMParams &p);
+    double log_weight(unsigned int t, const shared_ptr<ParticleGenealogy<int> > &genealogy, const DiscreteHMMParams &p);
 
     static int initial(gsl_rng *random, DiscreteHMMParams &params);
     static int forward(gsl_rng *random, int curr, DiscreteHMMParams &params);

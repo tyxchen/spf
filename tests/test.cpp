@@ -168,7 +168,7 @@ bool test_numerical_utils()
     return true;
 }
 
-bool test_smc(long seed)
+void test_smc(long seed)
 {
     cout << "=====Testing SMC=====" << endl;
     SMCOptions options;
@@ -189,9 +189,7 @@ bool test_smc(long seed)
     cout << "Estimate log P(y)= " << log_marginal_lik << "; Expected log P(y)= " << true_log_marginal_lik << endl;
     double diff = abs(exp(true_log_marginal_lik) - exp(log_marginal_lik));
     cout << "Diff: " << diff << endl;
-    if (diff > ERR_TOL) {
-        return false;
-    }
+    assert(diff < ERR_TOL);
 
     vector<double> probs_T(num_latent_states);
     for (int n = 0; n < options.num_particles; n++)
@@ -210,11 +208,7 @@ bool test_smc(long seed)
         cout << "Diff: " << err << endl;
     }
     cout << "average error: " << total_error/num_latent_states << endl;
-
-    if (total_error/num_latent_states > ERR_TOL) {
-        return false;
-    }
-    return true;
+    assert(total_error/num_latent_states < ERR_TOL);
 }
 
 bool test_csmc(long seed, size_t num_threads)
@@ -291,7 +285,7 @@ bool test_csmc(long seed, size_t num_threads)
     return true;
 }
 
-bool test_spf(long seed)
+void test_spf(long seed)
 {
     cout << "=====Testing SPF=====" << endl;
 
@@ -314,9 +308,7 @@ bool test_spf(long seed)
     cout << "Estimate log P(y)= " << log_marginal_lik << "; Expected log P(y)= " << true_log_marginal_lik << endl;
     double diff = abs(exp(true_log_marginal_lik) - exp(log_marginal_lik));
     cout << "Diff: " << diff << endl;
-    if (diff > ERR_TOL) {
-        return false;
-    }
+    assert(diff < ERR_TOL);
 
     double probs_T[num_latent_states];
     for (int n = 0; n < options.num_particles; n++)
@@ -336,15 +328,10 @@ bool test_spf(long seed)
         cout << "Diff: " << err << endl;
     }
     cout << "average error: " << total_error/num_latent_states << endl;
-    
-    if (total_error/num_latent_states > ERR_TOL) {
-        return false;
-    }
-    
-    return true;
+    assert(total_error/num_latent_states < ERR_TOL);
 }
 
-bool test_smc_sampler(long seed)
+void test_smc_sampler(long seed)
 {
     gsl_rng *random = generate_random_object(seed+3);
 
@@ -396,11 +383,7 @@ bool test_smc_sampler(long seed)
     smc.run_smc(hp);
     double smc_log_marginal = smc.get_log_marginal_likelihood();
     cout << "SMC sampler estimate: " << smc_log_marginal << endl;
-    if (abs(exp(exact_log_marginal) - exp(smc_log_marginal)) > ERR_TOL) {
-        cerr << "SMC sampler test failed!" << endl;
-        return false;
-    }
-    return true;
+    assert(abs(exp(exact_log_marginal) - exp(smc_log_marginal)) < ERR_TOL);
 }
 
 void test_resampling_schemes(long seed, unsigned int T)
@@ -551,16 +534,11 @@ int main()
 //    test_open_mp();
 
     long seed = 123;
-    if (!test_smc(seed))
-        return -1;
-    if (!test_spf(seed))
-        return -1;
-    if (!test_csmc(seed, 8))
-        return -1;
-    if (!test_csmc(seed, 1))
-        return -1;
-    if (!test_smc_sampler(seed))
-        return -1;
+    test_smc(seed);
+    test_spf(seed);
+    test_csmc(seed, 8);
+    test_csmc(seed, 1);
+    test_smc_sampler(seed);
 
     // implement formal validation framework for PMMH and PG
     //test_pmmh(seed);

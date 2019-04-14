@@ -95,6 +95,7 @@ shared_ptr<ParticleGenealogy<S> > ConditionalSMC<S,P>::run_csmc(P &params, share
     }
 
     // callback on the model, pass the particles
+    proposal.set_particle_population(particles, log_weights, log_norms);
     
     // sample genealogy
     return sample_genealogy(options.resampling_random);
@@ -126,37 +127,6 @@ double ConditionalSMC<S,P>::propose(gsl_rng *random, P &params, const unsigned i
         }
     }
 
-// parallelize proposal step
-//    vector<unsigned long> seeds;
-//    for (size_t i = 0; i < options.num_threads; i++) {
-//        seeds.push_back(gsl_rng_get(random));
-//    }
-//
-//    omp_set_num_threads(options.num_threads);
-//#pragma omp parallel
-//    {
-//        size_t id = omp_get_thread_num();
-//        size_t num_threads = omp_get_num_threads();
-//        //printf("%ld / %ld\n", (id+1), num_threads);
-//        gsl_rng *thread_rand = generate_random_object(seeds[id]);
-//        size_t start_idx = id * N/num_threads;
-//        size_t end_idx = (id + 1) * N/num_threads;
-//        if (id == num_threads - 1) {
-//            end_idx = N;
-//        }
-//#pragma omp for
-//        for (size_t k = start_idx; k < end_idx; k++)
-//        {
-//            if (r == 0) {
-//                particles_at_r[k] = proposal.propose_initial(thread_rand, log_w[k], params);
-//            } else {
-//                unsigned int parent_idx = ancestors[r-1][k];
-//                S *parent_particle = particles[r-1].at(parent_idx).get();
-//                particles_at_r[k] = proposal.propose_next(thread_rand, r, *parent_particle, log_w[k], params);
-//            }
-//        }
-//    }
-
     for (size_t k = 0; k < N; k++) {
         log_norm = log_add(log_norm, log_w[k]);
     }
@@ -166,11 +136,10 @@ double ConditionalSMC<S,P>::propose(gsl_rng *random, P &params, const unsigned i
         particles_at_r[N] = genealogy.get()->get_state_ptr_at(r);
         // TODO: this is potentially problematic within PG framework
         // the parameters from the last iteration have changed and hence, the likelihood
-        log_w[N] = proposal.log_weight(r, *particles_at_r[N].get(), params);
+        
+        log_w[N] = proposal.log_weight(r, genealogy, params);
         log_norm = log_add(log_norm, log_w[N]);
     }
-
-    proposal.set_particle_population(particles, log_weights, log_norms);
 
     return log_norm;
 }

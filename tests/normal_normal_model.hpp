@@ -35,7 +35,7 @@ public:
     unsigned long num_iterations();
     shared_ptr<NormalNormalState> propose_initial(gsl_rng *random, double &log_w, NormalNormalHyperParams &params);
     shared_ptr<NormalNormalState> propose_next(gsl_rng *random, unsigned int t, const NormalNormalState &curr, double &log_w, NormalNormalHyperParams &params);
-    double log_weight(unsigned int t, const NormalNormalState &state, const NormalNormalHyperParams &params);
+    double log_weight(unsigned int t, const shared_ptr<ParticleGenealogy<NormalNormalState> > &genealogy, const NormalNormalHyperParams &params);
     
     static double get_temperature(double t, size_t num_iter);
     static double compute_log_lik(const vector<double> &data, double mu, double sigma);

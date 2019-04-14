@@ -39,13 +39,14 @@ shared_ptr<int> DiscreteHMM::propose_next(gsl_rng *random, unsigned int t, const
 {
 	// sample from multinomial distribution parameterized by mu
 	int *state = new int(multinomial(random, params.transition_probs[curr]));
-    log_w = log_weight(t, *state, params);
+    log_w = log(params.emission_probs[*state][obs[t]]);
     shared_ptr<int> ret(state);
     return ret;
 }
 
-double DiscreteHMM::log_weight(unsigned int t, const int &state, const DiscreteHMMParams &params)
+double DiscreteHMM::log_weight(unsigned int t, const shared_ptr<ParticleGenealogy<int> > &genealogy, const DiscreteHMMParams &params)
 {
+    int state = *genealogy->get_state_ptr_at(t).get();
     return log(params.emission_probs[state][obs[t]]);
 }
 

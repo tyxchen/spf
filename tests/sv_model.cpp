@@ -35,9 +35,10 @@ shared_ptr<double> SVModel::propose_next(gsl_rng *random, unsigned int t, const 
     return shared_ptr<double>(xt);
 }
 
-double SVModel::log_weight(unsigned int t, const double &state, const SVModelParams &params)
+double SVModel::log_weight(unsigned int t, const shared_ptr<ParticleGenealogy<double> > &genealogy, const SVModelParams &params)
 {
-    return log(gsl_ran_gaussian_pdf(obs[t], sqrt(exp(state)) * params.beta));
+    double xt = *genealogy->get_state_ptr_at(t).get();
+    return log(gsl_ran_gaussian_pdf(obs[t], sqrt(exp(xt)) * params.beta));
 }
 
 void SVModel::generate_data(gsl_rng *random, size_t T, SVModelParams &params, vector<double> &latent, vector<double> &obs)
