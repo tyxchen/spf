@@ -8,6 +8,7 @@
 #ifndef csmc_h
 #define csmc_h
 
+#include <cmath>
 #include <memory>
 #include <vector>
 
@@ -152,23 +153,41 @@ void ConditionalSMC<S,P>::resample(gsl_rng *random, const unsigned int r, bool f
 
     // normalize the log weights
     normalize(log_weights[r], probs, log_norm);
-
-    unsigned int num_resamples = fix_last_genealogy ? N - 1: N;
     
-    // TODO: instead of using indices, pass in ancestors[r] directly?
-    unsigned int *indices = new unsigned int[num_resamples];
-    multinomial_resampling(random, &probs, num_resamples, indices);
+    // compute ess
+    double ess = 0.0;
+    for (size_t i = 0; i < N; i++) {
+        ess += pow(probs[i], 2.0);
+    }
+    ess = 1.0/ess;
+    ess /= N;
+    if (ess < options.ess_threshold) {
 
-    for (size_t k = 0; k < N-1; k++)
-    {
-        ancestors[r][k] = indices[k];
-    }
-    if (fix_last_genealogy) {
-        ancestors[r][N-1] = N-1;
+        unsigned int num_resamples = fix_last_genealogy ? N - 1: N;
+        
+        // TODO: instead of using indices, pass in ancestors[r] directly?
+        unsigned int *indices = new unsigned int[num_resamples];
+        multinomial_resampling(random, &probs, num_resamples, indices);
+
+        for (size_t k = 0; k < N-1; k++)
+        {
+            ancestors[r][k] = indices[k];
+        }
+        if (fix_last_genealogy) {
+            ancestors[r][N-1] = N-1;
+        } else {
+            ancestors[r][N-1] = indices[N-1];
+        }
+        delete [] indices;
+        
     } else {
-        ancestors[r][N-1] = indices[N-1];
+        
+        for (size_t k = 0; k < N; k++)
+        {
+            ancestors[r][k] = k;
+        }
+
     }
-    delete [] indices;
 }
 
 template <class S, class P>
