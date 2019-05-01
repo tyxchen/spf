@@ -217,7 +217,7 @@ bool test_csmc(long seed, size_t num_threads)
     SMCOptions options;
     options.main_seed = seed;
     options.resampling_seed = seed+123;
-    options.ess_threshold = 1;
+    options.ess_threshold = 0.5;
     options.num_particles = 100000;
     options.num_threads = num_threads;
 
@@ -496,6 +496,7 @@ void test_pg(long seed)
     // run PG on beta of SVModel
     SMCOptions smc_options;
     smc_options.num_particles = 200;
+    smc_options.num_threads = 4;
     SVModel proposal(sv_y);
     ConditionalSMC<double, SVModelParams> csmc(proposal, smc_options);
 
@@ -531,18 +532,18 @@ void test_open_mp()
 
 int main()
 {
-//    test_open_mp();
+    test_open_mp();
 
     long seed = 123;
     test_smc(seed);
     test_spf(seed);
-    test_csmc(seed, 8);
+    test_csmc(seed, 4);
     test_csmc(seed, 1);
     test_smc_sampler(seed);
 
     // implement formal validation framework for PMMH and PG
     //test_pmmh(seed);
-    //test_pg(seed);
+    test_pg(seed);
     cout << "All tests passed!" << endl;
     return 0;
 }

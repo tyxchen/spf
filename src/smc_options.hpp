@@ -9,6 +9,8 @@
 #ifndef smc_options_h
 #define smc_options_h
 
+#include <vector>
+
 #include <gsl/gsl_rng.h>
 
 class SMCOptions
@@ -34,6 +36,8 @@ public:
     
     gsl_rng *main_random = 0;
     gsl_rng *resampling_random = 0;
+    
+    std::vector<gsl_rng *> proposal_randoms;
 
     unsigned int num_threads = 1;
     

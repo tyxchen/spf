@@ -12,6 +12,8 @@
 #include <memory>
 #include <vector>
 
+#include <omp.h>
+
 #include "numerical_utils.hpp"
 #include "particle_genealogy.hpp"
 #include "sampling_utils.hpp"
@@ -116,15 +118,17 @@ double ConditionalSMC<S,P>::propose(gsl_rng *random, P &params, const unsigned i
 
     vector<shared_ptr<S> > &particles_at_r = particles[r];
     vector<double> &log_w = log_weights[r];
-    
+
+    omp_set_num_threads(options.num_threads);
+#pragma omp parallel for
     for (size_t k = 0; k < N; k++)
     {
         if (r == 0) {
-            particles_at_r[k] = proposal.propose_initial(random, log_w[k], params);
+            particles_at_r[k] = proposal.propose_initial(options.proposal_randoms[k], log_w[k], params);
         } else {
             unsigned int parent_idx = ancestors[r-1][k];
             S *parent_particle = particles[r-1].at(parent_idx).get();
-            particles_at_r[k] = proposal.propose_next(random, r, *parent_particle, log_w[k], params);
+            particles_at_r[k] = proposal.propose_next(options.proposal_randoms[k], r, *parent_particle, log_w[k], params);
         }
     }
 

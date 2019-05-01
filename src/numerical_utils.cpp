@@ -5,10 +5,10 @@
  *      Author: seonghwanjun
  */
 
+#include "numerical_utils.hpp"
+
 #include <cmath>
 #include <gsl/gsl_sf.h>
-
-#include "numerical_utils.hpp"
 
 const double DOUBLE_INF = std::numeric_limits<double>::infinity();
 const double DOUBLE_NEG_INF = -std::numeric_limits<double>::infinity();
