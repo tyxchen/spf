@@ -98,7 +98,8 @@ shared_ptr<ParticleGenealogy<S> > ConditionalSMC<S,P>::run_csmc(P &params, share
     }
 
     // callback on the model, pass the particles
-    proposal.set_particle_population(particles, log_weights, log_norms);
+    if (options.csmc_set_partile_population)
+        proposal.set_particle_population(particles, log_weights, log_norms);
     
     // sample genealogy
     return sample_genealogy(options.resampling_random);

@@ -30,6 +30,7 @@ public:
     bool resample_last_round = false;
     bool use_SPF = false;
     bool debug = false;
+    bool csmc_set_partile_population = true;
 
     long main_seed = 1;
     long resampling_seed = 2;

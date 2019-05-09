@@ -25,9 +25,12 @@ void SMCOptions::init()
 
 SMCOptions::~SMCOptions()
 {
-    delete main_random;
-    delete resampling_random;
+    //delete main_random;
+    //delete resampling_random;
+    gsl_rng_free(main_random);
+    gsl_rng_free(resampling_random);
     for (size_t i = 0; i < num_particles; i++) {
-        delete proposal_randoms[i];
+        gsl_rng_free(proposal_randoms[i]);
+        //delete proposal_randoms[i];
     }
 }
