@@ -42,7 +42,8 @@ public:
 
     // call back function, called by CSMC: user can sharpen the proposal using the sampled particles and log_weights if desired
     // can be useful for sharpening the proposal distribution
-    virtual void set_particle_population(const vector<vector<shared_ptr<S> > > &particles, const vector<vector<double> > &log_weights, const vector<double> &log_norms) { }
+//    virtual void set_particle_population(const vector<vector<shared_ptr<S> > > &particles, const vector<vector<double> > &log_weights, const vector<double> &log_norms) { }
+    virtual void set_particle_population(const vector<shared_ptr<S> > &particles) { }
     virtual ~ProblemSpecification() { }
 };
 

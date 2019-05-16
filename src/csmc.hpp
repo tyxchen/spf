@@ -98,8 +98,18 @@ shared_ptr<ParticleGenealogy<S> > ConditionalSMC<S,P>::run_csmc(P &params, share
     }
 
     // callback on the model, pass the particles
-    if (options.csmc_set_partile_population)
-        proposal.set_particle_population(particles, log_weights, log_norms);
+    if (options.csmc_set_partile_population) {
+        // resample the population and pass the empirical distribution at the last iteration
+        vector<double> weights(options.num_particles);
+        normalize(log_weights[R-1], weights, log_norms[R-1]);
+        unsigned int *indices = new unsigned int[options.num_particles];
+        multinomial_sample_indices(options.resampling_random, options.num_particles, weights, indices);
+        vector<shared_ptr<S> > empirical_measure(options.num_particles);
+        for (size_t i = 0; i < options.num_particles; i++) {
+            empirical_measure[i] = particles[R-1][indices[i]];
+        }
+        proposal.set_particle_population(empirical_measure);
+    }
     
     // sample genealogy
     return sample_genealogy(options.resampling_random);
