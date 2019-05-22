@@ -8,6 +8,7 @@
 #ifndef csmc_h
 #define csmc_h
 
+#include <chrono>
 #include <cmath>
 #include <memory>
 #include <vector>
@@ -89,12 +90,26 @@ shared_ptr<ParticleGenealogy<S> > ConditionalSMC<S,P>::run_csmc(P &params, share
         if (options.debug) {
             cout << "Iter " << r << endl;
         }
+        auto start = std::chrono::high_resolution_clock::now();
         log_norm = propose(options.main_random, params, r, genealogy);
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end - start;
+        if (options.debug) {
+            cout << "Proposal step: " << elapsed.count() << " seconds elapsed." <<  endl;
+        }
+
         log_norms[r] = log_norm;
         log_marginal_likelihood += (log_norm - log_N);
 
-        if (r < R - 1)
+        if (r < R - 1) {
+            start = std::chrono::high_resolution_clock::now();
             resample(options.resampling_random, r, genealogy != nullptr, log_norm);
+            end = std::chrono::high_resolution_clock::now();
+            elapsed = end - start;
+            if (options.debug) {
+                cout << "Resampling step: " << elapsed.count() << " seconds elapsed." <<  endl;
+            }
+        }
     }
 
     // callback on the model, pass the particles

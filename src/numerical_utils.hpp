@@ -27,6 +27,7 @@ void normalize_destructively(vector<double> &log_weights, double log_norm);
 double normalize_destructively(vector<double> &log_weights);
 double normalize_destructively(double *log_weights, int size);
 double log_add(double x, double y);
+double log_subtract(double x, double y);
 double log_add(double *x, int size);
 double log_add(vector<double> x);
 

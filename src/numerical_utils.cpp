@@ -113,6 +113,20 @@ double log_add(double x, double y)
 	return x + log(1.0 + exp(negDiff));
 }
 
+// is this useful? or even, make sense?
+double log_subtract(double x, double y)
+{
+    if (x < y) { // (log(e^x - e^y) = log(neg number) = -Inf
+        return DOUBLE_NEG_INF;
+    }
+    double negDiff = y - x;
+    if (negDiff < -20) {
+        return x;
+    }
+    return x + log(1.0 - exp(negDiff));
+}
+
+
 double log_add(vector<double> x)
 {
     double max = DOUBLE_NEG_INF;
